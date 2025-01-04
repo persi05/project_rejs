@@ -60,5 +60,13 @@ int main() {
         exit(1);
     }
 
+    shdata->currentOnBridge = 0;
+    shdata->currentOnShip   = 0;
+    shdata->totalRejsCount  = 0;
+    shdata->endOfDay        = 0;
+
+    printf("[DEBUG] Pamiec dzielona zainicjalizowana: maxRejs=%d, shipCapacity=%d, bridgeCapacity=%d\n",
+       MAX_REJS, STATEK_POJ, MOSTEK_POJ);
+
 	return 0;
 }
