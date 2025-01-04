@@ -48,5 +48,17 @@ int main() {
     init_semaphore(semid, SEM_SHIP, N);
     printf("[DEBUG] Semafory zainicjalizowane: SEM_MUTEX=1, SEM_BRIDGE=%d, SEM_SHIP=%d\n", K, N);
 
+    int shmid = shmget(shmkey, sizeof(SharedData), IPC_CREAT | 0600);
+    if (shmid < 0) {
+        perror("Blad podczas tworzenia segmentu pamieci wspoldzielonej");
+        exit(1);
+    }
+
+    SharedData *shdata = (SharedData*) shmat(shmid, NULL, 0);
+    if (shdata == (void*)-1) {
+        perror("Blad podczas przylaczania segmentu pamieci wspoldzielonej");
+        exit(1);
+    }
+
 	return 0;
 }
