@@ -13,8 +13,8 @@
 
 #define SHM_PATH        "."
 #define SEM_PATH        "."
-#define SHM_PROJ_ID     'S'
-#define SEM_PROJ_ID     'M'
+#define SHM_PROJ_ID     'A'
+#define SEM_PROJ_ID     'B'
 
 typedef struct {
     int currentOnBridge;
@@ -22,5 +22,12 @@ typedef struct {
     int totalRejsCount;
     int endOfDay;
 } SharedData;
+
+int create_semaphores(key_t key);
+void init_semaphore(int semid, int semnum, int value);
+void P(int semid, int semnum);
+void V(int semid, int semnum);
+void remove_semaphores(int semid);
+int get_semaphores(key_t key);
 
 #endif
