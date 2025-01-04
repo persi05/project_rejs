@@ -24,7 +24,7 @@ void P(int semid, int semnum) {
     sb.sem_op  = -1;
     sb.sem_flg = 0;
     if (semop(semid, &sb, 1) == -1) {
-        perror("Operacja P nie powiodła sie (semop)");
+        perror("Operacja P nie powiodla sie (semop)");
         exit(1);
     }
 }
@@ -35,7 +35,7 @@ void V(int semid, int semnum) {
     sb.sem_op  = +1; 
     sb.sem_flg = 0;
     if (semop(semid, &sb, 1) == -1) {
-        perror("Operacja V nie powiodła sie (semop)");
+        perror("Operacja V nie powiodla sie (semop)");
         exit(1);
     }
 }

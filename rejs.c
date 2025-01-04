@@ -8,7 +8,7 @@
 #include "shared.h"
 
 #define STATEK_POJ 5
-#define MOSTEK_POJ   3
+#define MOSTEK_POJ 3
 #define T1         1000   //czas co ile plynie statek (ms)
 #define T2         3000   //czas trwania rejsu (ms)
 #define MAX_REJS   3
