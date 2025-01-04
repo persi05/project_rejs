@@ -6,15 +6,13 @@
 #include <sys/shm.h>
 #include <sys/sem.h>
 
-#define SEM_MUTEX       0
-#define SEM_BRIDGE      1
-#define SEM_SHIP        2
-#define NUM_SEMAPHORES  3
+#define SEM_MUTEX         0
+#define SEM_BRIDGE        1
+#define SEM_SHIP          2 
+#define NUM_SEMAPHORES    3
 
-#define SHM_PATH        "."
-#define SEM_PATH        "."
-#define SHM_PROJ_ID     'A'
-#define SEM_PROJ_ID     'B'
+#define SHM_PROJ_ID      'A'
+#define SEM_PROJ_ID      'B'
 
 typedef struct {
     int currentOnBridge;

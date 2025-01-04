@@ -31,12 +31,12 @@ void arg_checker(){
 int main() {
     arg_checker();
     
-    key_t semkey = ftok(SEM_PATH, SEM_PROJ_ID);
+    key_t semkey = ftok(".", SEM_PROJ_ID);
     if (semkey == -1) {
         perror("Blad podczas generowania klucza w ftok()");
         exit(1);
     }
-    key_t shmkey = ftok(SHM_PATH, SHM_PROJ_ID);
+    key_t shmkey = ftok(".", SHM_PROJ_ID);
     if (shmkey == -1) {
         perror("Blad podczas generowania klucza w ftok()");
         exit(1);
@@ -66,7 +66,6 @@ int main() {
     shdata->earlyTrip       = 0;
     shdata->endOfDay        = 0;
     shdata->directionBridge = 0;
-
 
     printf("[DEBUG] Pamiec dzielona zainicjalizowana: maxRejs=%d, shipCapacity=%d, bridgeCapacity=%d\n",
        MAX_REJS, STATEK_POJ, MOSTEK_POJ);
