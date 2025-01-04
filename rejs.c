@@ -41,5 +41,12 @@ int main() {
         perror("Blad podczas generowania klucza w ftok()");
         exit(1);
     }
+
+    int semid = create_semaphores(semkey);
+    init_semaphore(semid, SEM_MUTEX, 1);
+    init_semaphore(semid, SEM_BRIDGE, K);
+    init_semaphore(semid, SEM_SHIP, N);
+    printf("[DEBUG] Semafory zainicjalizowane: SEM_MUTEX=1, SEM_BRIDGE=%d, SEM_SHIP=%d\n", K, N);
+
 	return 0;
 }
