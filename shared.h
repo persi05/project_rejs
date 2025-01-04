@@ -20,7 +20,9 @@ typedef struct {
     int currentOnBridge;
     int currentOnShip;
     int totalRejsCount;
+    int earlyTrip;
     int endOfDay;
+    int directionBridge;
 } SharedData;
 
 int create_semaphores(key_t key);
