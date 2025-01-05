@@ -44,9 +44,9 @@ int main() {
 
     int semid = create_semaphores(semkey);
     init_semaphore(semid, SEM_MUTEX, 1);
-    init_semaphore(semid, SEM_BRIDGE, K);
-    init_semaphore(semid, SEM_SHIP, N);
-    printf("[DEBUG] Semafory zainicjalizowane: SEM_MUTEX=1, SEM_BRIDGE=%d, SEM_SHIP=%d\n", K, N);
+    init_semaphore(semid, SEM_BRIDGE, MOSTEK_POJ);
+    init_semaphore(semid, SEM_SHIP, STATEK_POJ);
+    printf("[DEBUG] Semafory zainicjalizowane: SEM_MUTEX=1, SEM_BRIDGE=%d, SEM_SHIP=%d\n", MOSTEK_POJ, STATEK_POJ);
 
     int shmid = shmget(shmkey, sizeof(SharedData), IPC_CREAT | 0600);
     if (shmid < 0) {
