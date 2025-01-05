@@ -20,7 +20,7 @@ typedef struct {
     int totalRejsCount;
     int earlyTrip;
     int endOfDay;
-    int directionBridge;
+    int directionBridge;   //0 to w strone statku, 1 w strone portu
 } SharedData;
 
 int create_semaphores(key_t key);

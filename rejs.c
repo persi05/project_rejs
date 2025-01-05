@@ -21,6 +21,48 @@ typedef struct {
     SharedData* shdata;
 } PassengerArgs;
 
+void* passenger_thread(void* arg) {
+    PassengerArgs* p = (PassengerArgs*) arg;
+
+    while (1) {
+        semop(p->semid, &(struct sembuf){SEM_MUTEX, -1, 0}, 1);
+        if (p->shdata->directionBridge == 0) {
+            if (p->shdata->currentOnBridge + p->shdata->currentOnShip <= STATEK_POJ) {
+                semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+                break;
+            }
+        }
+
+        semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+        usleep(100000);
+    }
+
+    printf("[PASSENGER %d] Probuje wejsc na mostek===\n", p->passenger_id);
+
+    semop(p->semid, &(struct sembuf){SEM_BRIDGE, -1, 0}, 1);
+
+    semop(p->semid, &(struct sembuf){SEM_MUTEX, -1, 0}, 1);
+    p->shdata->currentOnBridge++;
+    printf("[PASSENGER %d] wchodzi na mostek+++. Obecnie na mostku: %d, na statku: %d\n",
+           p->passenger_id, p->shdata->currentOnBridge, p->shdata->currentOnShip);
+    semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+
+    usleep(100000);
+
+    while (1) {
+        semop(p->semid, &(struct sembuf){SEM_MUTEX, -1, 0}, 1);
+        if (p->shdata->directionBridge == 1 && p->shdata->currentOnBridge != 0) {
+            p->shdata->currentOnBridge--;
+            printf("[PASSENGER %d] schodzi z mostku---. Obecnie na mostku: %d\n",
+                   p->passenger_id, p->shdata->currentOnBridge);
+            semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+            semop(p->semid, &(struct sembuf){SEM_BRIDGE, 1, 0}, 1);
+            pthread_exit(NULL);
+        }
+        semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+        usleep(100000);
+    }
+}
 
 
 void arg_checker(){
