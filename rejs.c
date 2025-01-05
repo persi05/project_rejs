@@ -64,7 +64,6 @@ void* passenger_thread(void* arg) {
     }
 }
 
-
 void arg_checker(){
     if (STATEK_POJ <= 0 || MOSTEK_POJ <= 0 || T1 <= 0 || T2 <= 0 || MAX_REJS <= 0) {
                 fprintf(stderr, "Niepoprawne argumenty - wszystkie argumenty musza byc dodatnie\n");
@@ -137,6 +136,26 @@ int main() {
     /*
     ogarnac kapitan_statku i wyczyscic!!! na koncu i mozna raport jakis idk
     */
+
+   /*
+   jakos napisalbym
+    pthread_t passenger_threads[NUM_PASSENGERS];
+    PassengerArgs pArgs[NUM_PASSENGERS];
+
+     for (int i = 0; i < NUM_PASSENGERS; i++) {
+        pArgs[i].passenger_id = i + 1;
+        pArgs[i].semid = semid;
+        pArgs[i].shdata = shdata;
+
+        if (pthread_create(&passenger_threads[i], NULL, passenger_thread, &pArgs[i]) != 0) {
+            perror("Blad podczas tworzenia watku pasazera");
+            exit(1);
+        }
+        printf("[MAIN] Stworzono wątek pasażera nr %d\n", i + 1);
+        //usleep(100000);
+        }
+    i ogarnac zeby sie program nie konczyl albo sprawdzac endofday albo cos yolo
+   */
 
 	return 0;
 }
