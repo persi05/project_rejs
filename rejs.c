@@ -121,24 +121,37 @@ int main() {
     printf("[DEBUG] Pamiec dzielona zainicjalizowana: maxRejs=%d, shipCapacity=%d, bridgeCapacity=%d\n",
        MAX_REJS, STATEK_POJ, MOSTEK_POJ);
 
-    pid_t pidStatku = fork();
-    if (pidStatku == -1){
+    pid_t pidKapitanStatku = fork();
+    if (pidKapitanStatku == -1){
         perror("Blad podczas tworzenia procesu kapitan_statku");
         exit(1);
     }
 
-    if (pidStatku == 0) {
-        //jakis char konwerter i execl 
+    if (pidKapitanStatku == 0) {
+        //jakis char konwerter i execl albo pamiec dzielona? 
          perror("Blad podczas uruchomienia kapitan_statku (execl)");
          exit(1);
     }
 
     /*
-    ogarnac kapitan_statku i wyczyscic!!! na koncu i mozna raport jakis idk
+    ogarnac kapitan_statku i kapitan_portu execl
     */
 
+    pid_t pidKapitanPortu = fork();
+    if (pidKapitanPortu == -1){
+        perror("Blad podczas tworzenia procesu kapitan_portu");
+        exit(1);
+    }
+    if (pidKapitanPortu == 0) {
+        //execl("./kapitan_portu", "kapitan_portu", NULL); ogarnac trzeba czy cos potrzebuje 
+        perror("Blad podczas uruchamiania procesu kapitan_portu(execl)");
+        exit(1);
+    }   
+   
+
    /*
-   jakos napisalbym
+   jakos napisalbym tylko jeszcze zastanowic sie gdzie to dac i czy nie zmienic na dynamiczne
+   i czy moze po prostu caly czas ci sami goscie beda wchodzic i schodzic z mostku na rejs
     pthread_t passenger_threads[NUM_PASSENGERS];
     PassengerArgs pArgs[NUM_PASSENGERS];
 
@@ -156,6 +169,8 @@ int main() {
         }
     i ogarnac zeby sie program nie konczyl albo sprawdzac endofday albo cos yolo
    */
+
+   // i wyczyscic!!! shm i sem na koncu i mozna raport jakis idk
 
 	return 0;
 }
