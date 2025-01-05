@@ -5,13 +5,23 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
+#include <sys/wait.h> 
 #include "shared.h"
 
-#define STATEK_POJ 5
-#define MOSTEK_POJ 3
-#define T1         1000   //czas co ile plynie statek (ms)
-#define T2         3000   //czas trwania rejsu (ms)
-#define MAX_REJS   3
+#define STATEK_POJ     5
+#define MOSTEK_POJ     3
+#define T1             1000   //czas co ile plynie statek (ms)
+#define T2             3000   //czas trwania rejsu (ms)
+#define MAX_REJS       3
+#define NUM_PASSENGERS 50
+
+typedef struct {
+    int passenger_id;
+    int semid;
+    SharedData* shdata;
+} PassengerArgs;
+
+
 
 void arg_checker(){
     if (STATEK_POJ <= 0 || MOSTEK_POJ <= 0 || T1 <= 0 || T2 <= 0 || MAX_REJS <= 0) {
@@ -70,7 +80,21 @@ int main() {
     printf("[DEBUG] Pamiec dzielona zainicjalizowana: maxRejs=%d, shipCapacity=%d, bridgeCapacity=%d\n",
        MAX_REJS, STATEK_POJ, MOSTEK_POJ);
 
+    pid_t pidStatku = fork();
+    if (pidStatku == -1){
+        perror("Blad podczas tworzenia procesu kapitan_statku");
+        exit(1);
+    }
 
+    if (pidStatku == 0) {
+        //jakis char konwerter i execl 
+         perror("Blad podczas uruchomienia kapitan_statku (execl)");
+         exit(1);
+    }
+
+    /*
+    ogarnac kapitan_statku i wyczyscic!!! na koncu i mozna raport jakis idk
+    */
 
 	return 0;
 }
