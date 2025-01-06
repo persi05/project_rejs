@@ -143,11 +143,13 @@ int main() {
         exit(1);
     }
     if (pidKapitanPortu == 0) {
-        //execl("./kapitan_portu", "kapitan_portu", NULL); ogarnac trzeba czy cos potrzebuje 
+        char pidArg[10];
+        snprintf(pidArg, sizeof(pidArg), "%d", pidKapitanStatku);
+        execl("./kapitan_portu", "kapitan_portu", pidArg, NULL); //wstepnie tak
         perror("Blad podczas uruchamiania procesu kapitan_portu(execl)");
         exit(1);
     }   
-   
+
 
    /*
    jakos napisalbym tylko jeszcze zastanowic sie gdzie to dac i czy nie zmienic na dynamiczne
