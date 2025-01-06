@@ -27,7 +27,7 @@ void* passenger_thread(void* arg) {
     while (1) {
         semop(p->semid, &(struct sembuf){SEM_MUTEX, -1, 0}, 1);
         if (p->shdata->directionBridge == 0) {
-            if (p->shdata->currentOnBridge + p->shdata->currentOnShip <= STATEK_POJ) {
+            if (p->shdata->currentOnBridge + p->shdata->currentOnShip < STATEK_POJ) {
                 semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
                 break;
             }
@@ -49,19 +49,47 @@ void* passenger_thread(void* arg) {
 
     usleep(100000);
 
-    while (1) {
+    while(1){
         semop(p->semid, &(struct sembuf){SEM_MUTEX, -1, 0}, 1);
-        if (p->shdata->directionBridge == 1 && p->shdata->currentOnBridge != 0) {
+
+        if (p->shdata->directionBridge == 0 && p->shdata->currentOnShip < STATEK_POJ) {
             p->shdata->currentOnBridge--;
-            printf("[PASSENGER %d] schodzi z mostku---. Obecnie na mostku: %d\n",
-                   p->passenger_id, p->shdata->currentOnBridge);
+            p->shdata->currentOnShip++;
+            printf("[PASSENGER %d] Wszedl na statek+++. Obecnie na mostku: %d, na statku: %d\n",
+                p->passenger_id, p->shdata->currentOnBridge, p->shdata->currentOnShip);
             semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
             semop(p->semid, &(struct sembuf){SEM_BRIDGE, 1, 0}, 1);
-            pthread_exit(NULL);
+            break;
+        }
+
+        semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+
+        usleep(100000);
+    }
+
+    while (1) {
+        semop(p->semid, &(struct sembuf){SEM_MUTEX, -1, 0}, 1);
+        if (p->shdata->directionBridge == 1 && p->shdata->currentOnBridge < MOSTEK_POJ) {
+            p->shdata->currentOnShip--;
+            p->shdata->currentOnBridge++;
+            printf("[PASSENGER %d] schodzi ze statku--- i wchodze na mostek. Obecnie na mostku: %d\n",
+                   p->passenger_id, p->shdata->currentOnBridge);
+            semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+            semop(p->semid, &(struct sembuf){SEM_BRIDGE, -1, 0}, 1);
+            break;
         }
         semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
         usleep(100000);
     }
+
+    semop(p->semid, &(struct sembuf){SEM_MUTEX, -1, 0}, 1);
+    p->shdata->currentOnBridge--;
+    printf("[PASSENGER %d] Zszedl z mostku do portu. Koniec watka. Obecnie na mostku: %d\n",
+    p->passenger_id, p->shdata->currentOnBridge);
+    semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+    semop(p->semid, &(struct sembuf){SEM_BRIDGE, 1, 0}, 1);
+
+    pthread_exit(NULL);
 }
 
 void arg_checker(){

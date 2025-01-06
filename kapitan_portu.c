@@ -66,16 +66,15 @@ int main(int argc, char* argv[]) {
         usleep(random_time);
         send_signal1();
 
-        clear_input_buffer();
-
         char input[10];
+
+        clear_buffer();
 
         if (fgets(input, sizeof(input), stdin) != NULL) {
             int length = strlen(input);
             if (length > 8) {
                 printf("[KAPITAN PORTU] Wprowadzone dane do wyslania signal1 za dlugie. Wpisz tylko 's'\n");
                 clear_buffer();
-                continue;
             }
             if (strncmp(input, "s", 1) == 0) {
                 send_signal2();
