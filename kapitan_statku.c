@@ -8,7 +8,7 @@
 
 int semid;
 SharedData* shdata;
-int flag = 1;
+int shmid;
 
 void handle_signal1(int sig) {
     P(semid, SEM_MUTEX);
@@ -22,7 +22,24 @@ void handle_signal2(int sig) {
     shdata->endOfDay = 1;
     V(semid, SEM_MUTEX);
     printf("[KAPITAN STATKU] 'signal2' koniec dnia\n");
-    flag = 0;
+}
+
+void unload_passengers() {
+    printf("[KAPITAN STATKU] Rozpoczynam wyladunek pasazerow-----\n");
+    P(semid, SEM_MUTEX);
+    shdata->directionBridge = 1;
+    V(semid, SEM_MUTEX);
+
+    while (1) {
+        P(semid, SEM_MUTEX);
+        if (shdata->currentOnShip == 0 && shdata->currentOnBridge == 0) {
+            printf("[KAPITAN STATKU] Wszyscy pasazerowie opuscili statek i most\n");
+            V(semid, SEM_MUTEX);
+            break;
+        }
+        V(semid, SEM_MUTEX);
+        usleep(100000);
+    }
 }
 
 int main(){
