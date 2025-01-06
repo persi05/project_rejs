@@ -8,6 +8,22 @@
 
 int semid;
 SharedData* shdata;
+int flag = 1;
+
+void handle_signal1(int sig) {
+    P(semid, SEM_MUTEX);
+    shdata->earlyTrip = 1;
+    V(semid, SEM_MUTEX);
+    printf("[KAPITAN STATKU] 'signal1' wyplywamy wczesniej\n");
+}
+
+void handle_signal2(int sig) {
+    P(semid, SEM_MUTEX);
+    shdata->endOfDay = 1;
+    V(semid, SEM_MUTEX);
+    printf("[KAPITAN STATKU] 'signal2' koniec dnia\n");
+    flag = 0;
+}
 
 int main(){
     key_t semkey = ftok(".", SEM_PROJ_ID);
@@ -39,4 +55,6 @@ int main(){
         perror("Blad podczas przylaczania segmentu pamieci dzielonej w kapitan_statku");
         exit(1);
     }    
+
+
 }
