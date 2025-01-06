@@ -25,69 +25,69 @@ void* passenger_thread(void* arg) {
     PassengerArgs* p = (PassengerArgs*) arg;
 
     while (1) {
-        semop(p->semid, &(struct sembuf){SEM_MUTEX, -1, 0}, 1);
+        P(p->semid, SEM_MUTEX);
         if (p->shdata->directionBridge == 0) {
             if (p->shdata->currentOnBridge + p->shdata->currentOnShip < STATEK_POJ) {
-                semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+                V(p->semid, SEM_MUTEX);
                 break;
             }
         }
 
-        semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+        V(p->semid, SEM_MUTEX);
         usleep(100000);
     }
 
     printf("[PASSENGER %d] Probuje wejsc na mostek===\n", p->passenger_id);
 
-    semop(p->semid, &(struct sembuf){SEM_BRIDGE, -1, 0}, 1);
+    P(p->semid, SEM_BRIDGE);
 
-    semop(p->semid, &(struct sembuf){SEM_MUTEX, -1, 0}, 1);
+    P(p->semid, SEM_MUTEX);
     p->shdata->currentOnBridge++;
     printf("[PASSENGER %d] wchodzi na mostek+++. Obecnie na mostku: %d, na statku: %d\n",
            p->passenger_id, p->shdata->currentOnBridge, p->shdata->currentOnShip);
-    semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+    V(p->semid, SEM_MUTEX);
 
     usleep(100000);
 
     while(1){
-        semop(p->semid, &(struct sembuf){SEM_MUTEX, -1, 0}, 1);
+        P(p->semid, SEM_MUTEX);
 
         if (p->shdata->directionBridge == 0 && p->shdata->currentOnShip < STATEK_POJ) {
             p->shdata->currentOnBridge--;
             p->shdata->currentOnShip++;
             printf("[PASSENGER %d] Wszedl na statek+++. Obecnie na mostku: %d, na statku: %d\n",
                 p->passenger_id, p->shdata->currentOnBridge, p->shdata->currentOnShip);
-            semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
-            semop(p->semid, &(struct sembuf){SEM_BRIDGE, 1, 0}, 1);
+            V(p->semid, SEM_MUTEX);
+            V(p->semid, SEM_BRIDGE);
             break;
         }
 
-        semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+        V(p->semid, SEM_MUTEX);
 
         usleep(100000);
     }
 
     while (1) {
-        semop(p->semid, &(struct sembuf){SEM_MUTEX, -1, 0}, 1);
+        P(p->semid, SEM_MUTEX);
         if (p->shdata->directionBridge == 1 && p->shdata->currentOnBridge < MOSTEK_POJ) {
             p->shdata->currentOnShip--;
             p->shdata->currentOnBridge++;
             printf("[PASSENGER %d] schodzi ze statku--- i wchodze na mostek. Obecnie na mostku: %d\n",
                    p->passenger_id, p->shdata->currentOnBridge);
-            semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
-            semop(p->semid, &(struct sembuf){SEM_BRIDGE, -1, 0}, 1);
+            V(p->semid, SEM_MUTEX);
+            P(p->semid, SEM_BRIDGE);
             break;
         }
-        semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
+        V(p->semid, SEM_MUTEX);
         usleep(100000);
     }
 
-    semop(p->semid, &(struct sembuf){SEM_MUTEX, -1, 0}, 1);
+    P(p->semid, SEM_MUTEX);
     p->shdata->currentOnBridge--;
     printf("[PASSENGER %d] Zszedl z mostku do portu. Koniec watka. Obecnie na mostku: %d\n",
     p->passenger_id, p->shdata->currentOnBridge);
-    semop(p->semid, &(struct sembuf){SEM_MUTEX, 1, 0}, 1);
-    semop(p->semid, &(struct sembuf){SEM_BRIDGE, 1, 0}, 1);
+    V(p->semid, SEM_MUTEX);
+    V(p->semid, SEM_BRIDGE);
 
     pthread_exit(NULL);
 }
@@ -124,8 +124,7 @@ int main() {
     int semid = create_semaphores(semkey);
     init_semaphore(semid, SEM_MUTEX, 1);
     init_semaphore(semid, SEM_BRIDGE, MOSTEK_POJ);
-    init_semaphore(semid, SEM_SHIP, STATEK_POJ);
-    printf("[DEBUG] Semafory zainicjalizowane: SEM_MUTEX=1, SEM_BRIDGE=%d, SEM_SHIP=%d\n", MOSTEK_POJ, STATEK_POJ);
+    printf("[MAIN] Semafory zainicjalizowane: SEM_MUTEX=1, SEM_BRIDGE=%d, MOSTEK_POJ");
 
     int shmid = shmget(shmkey, sizeof(SharedData), IPC_CREAT | 0600);
     if (shmid < 0) {
@@ -146,8 +145,7 @@ int main() {
     shdata->endOfDay        = 0;
     shdata->directionBridge = 0;
 
-    printf("[DEBUG] Pamiec dzielona zainicjalizowana: maxRejs=%d, shipCapacity=%d, bridgeCapacity=%d\n",
-       MAX_REJS, STATEK_POJ, MOSTEK_POJ);
+    printf("[MAIN] Pamiec dzielona zainicjalizowana\n");
 
     pid_t pidKapitanStatku = fork();
     if (pidKapitanStatku == -1){
@@ -162,7 +160,7 @@ int main() {
     }
 
     /*
-    ogarnac kapitan_statku i kapitan_portu execl
+    ogarnac kapitan_statku
     */
 
     pid_t pidKapitanPortu = fork();
@@ -200,7 +198,13 @@ int main() {
     i ogarnac zeby sie program nie konczyl albo sprawdzac endofday albo cos yolo
    */
 
-   // i wyczyscic!!! shm i sem na koncu i mozna raport jakis idk
+    remove_semaphores(semid);
+    if (shmdt(shdata) == -1) {
+        perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej");
+    }
+    if (shmctl(shmid, IPC_RMID, NULL) == -1) {
+        perror("Blad podczas usuwania segmentu pamieci wspoldzielonej");
+    }
 
 	return 0;
 }
