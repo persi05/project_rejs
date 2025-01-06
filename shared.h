@@ -8,8 +8,7 @@
 
 #define SEM_MUTEX         0
 #define SEM_BRIDGE        1
-#define SEM_SHIP          2 
-#define NUM_SEMAPHORES    3
+#define NUM_SEMAPHORES    2
 
 #define SHM_PROJ_ID      'A'
 #define SEM_PROJ_ID      'B'
@@ -28,6 +27,5 @@ void init_semaphore(int semid, int semnum, int value);
 void P(int semid, int semnum);
 void V(int semid, int semnum);
 void remove_semaphores(int semid);
-int get_semaphores(key_t key);
 
 #endif

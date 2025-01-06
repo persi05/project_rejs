@@ -45,12 +45,3 @@ void remove_semaphores(int semid) {
         perror("Blad przy usuwaniu zestawu semaforow (semctl IPC_RMID)");
     }
 }
-
-int get_semaphores(key_t key) {
-    int semid = semget(key, NUM_SEMAPHORES, 0);
-    if (semid < 0) {
-        perror("Blad przy uzyskiwaniu zestawu semaforow (semget)");
-        exit(1);
-    }
-    return semid;
-}
