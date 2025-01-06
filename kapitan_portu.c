@@ -3,11 +3,13 @@
 #include <unistd.h>
 #include <signal.h>
 #include <time.h>
-//#include <sys/ipc.h>
-//#include <sys/shm.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include "shared.h"
 
 pid_t kapitanStatku_pid;
+SharedData* shdata;
+int max_rejs;
 
 void send_signal1() {
     if (kill(kapitanStatku_pid, SIGUSR1) == -1) {
@@ -31,17 +33,15 @@ void clear_buffer() {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc != 2) {
+    if (argc != 3) {
         perror("Bledna liczba argumentow przy wywolaniu kapitan_portu\n");
     }
 
     srand(time(NULL));
 
     kapitanStatku_pid = (pid_t)atoi(argv[1]);
+    max_rejs = atoi(argv[2]);
 
-    printf("[KAPITAN PORTU]-------START------\n");
-
-    /* mozliwe ze bede potrzebowal - musze pomyslec jak to zrobic - zakomentowane includy
     key_t shmkey = ftok(".", SHM_PROJ_ID);
     if (shmkey == -1) {
         perror("Blad podczas generowania klucza w kapitan_port ftok()");
@@ -54,14 +54,19 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    SharedData* shdata = (SharedData*)shmat(shmid, NULL, 0);
+    shdata = (SharedData*)shmat(shmid, NULL, 0);
     if (shdata == (void*)-1) {
-        perror("Blad podczas przylaczania segmentu pamieci wspoldzielonej w kapitan_portu");
+        perror("[KAPITAN PORTU] Blad podczas laczenia z pamiecia dzielona (shmat)");
         exit(1);
     }
-    */
+
+    printf("[KAPITAN PORTU]-------START------ wpisz s by wyslac signal2, signal 1 wysyla sie co czas 8-12s\n");
 
     while (1) {
+        if (shdata->totalRejsCount >= max_rejs) {
+            printf("[KAPITAN PORTU] Osiagnieto maksymalna liczbe rejsow (%d). Koncze proces.\n", max_rejs);
+            break;
+        }
         int random_time = (rand() % 5 + 8) * 1000000;
         usleep(random_time);
         send_signal1();
@@ -85,11 +90,9 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    /*
     if (shmdt(shdata) == -1) {
         perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_portu");
     }
-    */
 
     printf("[KAPITAN PORTU]------KONIEC------\n");
     return 0;

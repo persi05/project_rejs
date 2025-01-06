@@ -170,8 +170,10 @@ int main() {
     }
     if (pidKapitanPortu == 0) {
         char pidArg[10];
+        char maxRejsArg[10];
         snprintf(pidArg, sizeof(pidArg), "%d", pidKapitanStatku);
-        execl("./kapitan_portu", "kapitan_portu", pidArg, NULL); //wstepnie tak
+        snprintf(maxRejsArg, sizeof(maxRejsArg), "%d", MAX_REJS);
+        execl("./kapitan_portu", "kapitan_portu", pidArg, maxRejsArg, NULL);
         perror("Blad podczas uruchamiania procesu kapitan_portu(execl)");
         exit(1);
     }   
@@ -197,6 +199,8 @@ int main() {
         }
     i ogarnac zeby sie program nie konczyl albo sprawdzac endofday albo cos yolo
    */
+
+    while (wait(NULL) > 0);
 
     remove_semaphores(semid);
     if (shmdt(shdata) == -1) {
