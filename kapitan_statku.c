@@ -120,6 +120,70 @@ int main(){
         exit(1);
     }
 
+    printf("[KAPITAN STATKU]-------START------\n");
 
+    while (1) {
+        printf("[KAPITAN STATKU] Rozpoczynam załadunek pasazerow+++++\n");
+        P(semid, SEM_MUTEX);
+        shdata->directionBridge = 0;
+        V(semid, SEM_MUTEX);
 
+        int timeCount = 0;//chyba tak mala nieprecyzyjnosc bedzie ok
+
+        while (timeCount < T1) {
+            P(semid, SEM_MUTEX);
+            int earlyTrip = shdata->earlyTrip;
+            int endOfDay = shdata->endOfDay;
+            V(semid, SEM_MUTEX);
+
+            if (endOfDay) {
+                printf("[KAPITAN STATKU] Sygnal SIGUSR2\n");
+                unload_passengers();
+                if (shmdt(shdata) == -1) {
+                perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
+                }
+                return 0;
+            }
+
+            if (earlyTrip) {
+                P(semid, SEM_MUTEX);
+                shdata->earlyTrip = 0;
+                V(semid, SEM_MUTEX);
+                printf("[KAPITAN STATKU] Sygnal SIGUSR1 - odplywam\n");
+                break;
+            }
+
+            sleep(1);
+            timeCount++;
+        }
+
+        P(semid, SEM_MUTEX);
+        if (shdata->totalRejsCount >= R) {
+            V(semid, SEM_MUTEX);
+            printf("[KAPITAN STATKU] Maksymalna liczba rejsow (%d), koniec procedury\n", R);
+            if (shmdt(shdata) == -1) {
+            perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
+            }
+            return 0;
+        }
+        V(semid, SEM_MUTEX);
+
+        sail();
+
+        P(semid, SEM_MUTEX);
+        if (shdata->endOfDay) {
+            V(semid, SEM_MUTEX);
+            printf("[KAPITAN STATKU] Koniec, signal2 odebrany podczas rejsu\n");
+            if (shmdt(shdata) == -1) {
+            perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
+            }
+            return 0;
+        }
+        V(semid, SEM_MUTEX);
+    }
+
+    if (shmdt(shdata) == -1) {
+        perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
+    }
+    return 0;
 }
