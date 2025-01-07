@@ -75,33 +75,51 @@ void sail() {
 int main(){
     key_t semkey = ftok(".", SEM_PROJ_ID);
     if (semkey == -1) {
-        perror("Blad podczas generowania klucza semafora w kapitan_statku");
+        perror("Blad podczas generowania klucza semafora w kapitan_statku\n");
         exit(1);
     }
 
     semid = semget(semkey, NUM_SEMAPHORES, 0600);
     if (semid < 0) {
-        perror("Blad podczas otwierania semaforow w kapitan_statku");
+        perror("Blad podczas otwierania semaforow w kapitan_statku\n");
         exit(1);
     }
 
     key_t shmkey = ftok(".", SHM_PROJ_ID);
     if (shmkey == -1) {
-        perror("Blad podczas generowania klucza pamieci dzielonej w kapitan_statku");
+        perror("Blad podczas generowania klucza pamieci dzielonej w kapitan_statku\n");
         exit(1);
     }
 
     int shmid = shmget(shmkey, sizeof(SharedData), 0600);
     if (shmid < 0) {
-        perror("Blad podczas otwierania pamieci dzielonej w kapitan_statku");
+        perror("Blad podczas otwierania pamieci dzielonej w kapitan_statku\n");
         exit(1);
     }
 
     shdata = (SharedData*)shmat(shmid, NULL, 0);
     if (shdata == (void*)-1) {
-        perror("Blad podczas przylaczania segmentu pamieci dzielonej w kapitan_statku");
+        perror("Blad podczas przylaczania segmentu pamieci dzielonej w kapitan_statku\n");
         exit(1);
     }    
+
+    struct sigaction sa;
+	sa.sa_handler = handle_signal1;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+
+    if (sigaction(SIGUSR1, &sa, NULL) == -1) {
+        perror("blad sigaction signal1 w kapitan_statku\n");
+        exit(1);
+    }
+
+    sa.sa_handler = handle_signal2;
+
+    if (sigaction(SIGUSR2, &sa, NULL) == -1) {
+        perror("blad sigaction signal2 w kapitan_statku\n");
+        exit(1);
+    }
+
 
 
 }
