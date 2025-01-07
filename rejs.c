@@ -10,32 +10,31 @@
 
 typedef struct {
     int passenger_id;
-    int semid;
 } PassengerArgs;
 
 SharedData *shdata;
+int semid;
 
 void* passenger_thread(void* arg) {
     PassengerArgs* p = (PassengerArgs*) arg;
 
     while (1) {
-        P(p->semid, SEM_MUTEX);
+        P(semid, SEM_MUTEX);
         if (shdata->directionBridge == 0 && shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ) {
-            V(p->semid, SEM_MUTEX);
+            V(semid, SEM_MUTEX);
             break;
         }
 
-        V(p->semid, SEM_MUTEX);
+        V(semid, SEM_MUTEX);
         usleep(100000);
     }
 
     printf("[PASSENGER %d] Probuje wejsc na mostek===\n", p->passenger_id);
 
-    P(p->semid, SEM_BRIDGE);
+    P(semid, SEM_BRIDGE);
 
-    P(p->semid, SEM_MUTEX);
+    P(semid, SEM_MUTEX);
 
-    //to nie wiesz jak 39 43-46
     if (shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ) {
         shdata->currentOnBridge++;
         printf("[PASSENGER %d] wchodzi na mostek+++. Obecnie na mostku: %d, na statku: %d\n",
@@ -44,52 +43,49 @@ void* passenger_thread(void* arg) {
         printf("[PASSENGER %d] Nie moze wejsc na mostek, brak miejsca. Obecnie na mostku: %d, na statku: %d\n",
                p->passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
     }
-    V(p->semid, SEM_MUTEX);
+    V(semid, SEM_MUTEX);
 
     usleep(100000);
 
     while(1){
-        P(p->semid, SEM_MUTEX);
+        P(semid, SEM_MUTEX);
 
         if (shdata->directionBridge == 0 && shdata->currentOnShip < STATEK_POJ) {
             shdata->currentOnBridge--;
             shdata->currentOnShip++;
             printf("[PASSENGER %d] Wszedl na statek+++. Obecnie na mostku: %d, na statku: %d\n",
                 p->passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
-            V(p->semid, SEM_MUTEX);
-            V(p->semid, SEM_BRIDGE);
+            V(semid, SEM_MUTEX);
+            V(semid, SEM_BRIDGE);
             break;
         }
 
-        V(p->semid, SEM_MUTEX);
+        V(semid, SEM_MUTEX);
 
         usleep(100000);
     }
-    printf("tu1");
 
     while (1) {
-        printf("tu2");
-        P(p->semid, SEM_MUTEX);
+        P(semid, SEM_MUTEX);
         if (shdata->directionBridge == 1 && shdata->currentOnBridge < MOSTEK_POJ) {
-            printf("tu3");
             shdata->currentOnShip--;
             shdata->currentOnBridge++;
             printf("[PASSENGER %d] schodzi ze statku--- i wchodze na mostek. Obecnie na mostku: %d\n",
                    p->passenger_id, shdata->currentOnBridge);
-            V(p->semid, SEM_MUTEX);
-            P(p->semid, SEM_BRIDGE);
+            V(semid, SEM_MUTEX);
+            P(semid, SEM_BRIDGE);
             break;
         }
-        V(p->semid, SEM_MUTEX);
+        V(semid, SEM_MUTEX);
         usleep(800000);
     }
-printf("tu4");
-    P(p->semid, SEM_MUTEX);
+
+    P(semid, SEM_MUTEX);
     shdata->currentOnBridge--;
     printf("[PASSENGER %d] Zszedl z mostku do portu. Koniec watka. Obecnie na mostku: %d\n",
     p->passenger_id, shdata->currentOnBridge);
-    V(p->semid, SEM_MUTEX);
-    V(p->semid, SEM_BRIDGE);
+    V(semid, SEM_MUTEX);
+    V(semid, SEM_BRIDGE);
 
     pthread_exit(NULL);
 }
@@ -123,7 +119,7 @@ int main() {
         exit(1);
     }
 
-    int semid = create_semaphores(semkey);
+    semid = create_semaphores(semkey);
     init_semaphore(semid, SEM_MUTEX, 1);
     init_semaphore(semid, SEM_BRIDGE, MOSTEK_POJ);
     printf("[MAIN] Semafory zainicjalizowane: SEM_MUTEX=1, SEM_BRIDGE, MOSTEK_POJ");
