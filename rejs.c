@@ -18,16 +18,17 @@
 typedef struct {
     int passenger_id;
     int semid;
-    SharedData* shdata;
 } PassengerArgs;
+
+SharedData *shdata;
 
 void* passenger_thread(void* arg) {
     PassengerArgs* p = (PassengerArgs*) arg;
 
     while (1) {
         P(p->semid, SEM_MUTEX);
-        if (p->shdata->directionBridge == 0) {
-            if (p->shdata->currentOnBridge + p->shdata->currentOnShip < STATEK_POJ) {
+        if (shdata->directionBridge == 0) {
+            if (shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ) {
                 V(p->semid, SEM_MUTEX);
                 break;
             }
@@ -42,9 +43,9 @@ void* passenger_thread(void* arg) {
     P(p->semid, SEM_BRIDGE);
 
     P(p->semid, SEM_MUTEX);
-    p->shdata->currentOnBridge++;
+    shdata->currentOnBridge++;
     printf("[PASSENGER %d] wchodzi na mostek+++. Obecnie na mostku: %d, na statku: %d\n",
-           p->passenger_id, p->shdata->currentOnBridge, p->shdata->currentOnShip);
+           p->passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
     V(p->semid, SEM_MUTEX);
 
     usleep(100000);
@@ -52,11 +53,11 @@ void* passenger_thread(void* arg) {
     while(1){
         P(p->semid, SEM_MUTEX);
 
-        if (p->shdata->directionBridge == 0 && p->shdata->currentOnShip < STATEK_POJ) {
-            p->shdata->currentOnBridge--;
-            p->shdata->currentOnShip++;
+        if (shdata->directionBridge == 0 && shdata->currentOnShip < STATEK_POJ) {
+            shdata->currentOnBridge--;
+            shdata->currentOnShip++;
             printf("[PASSENGER %d] Wszedl na statek+++. Obecnie na mostku: %d, na statku: %d\n",
-                p->passenger_id, p->shdata->currentOnBridge, p->shdata->currentOnShip);
+                p->passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
             V(p->semid, SEM_MUTEX);
             V(p->semid, SEM_BRIDGE);
             break;
@@ -69,11 +70,11 @@ void* passenger_thread(void* arg) {
 
     while (1) {
         P(p->semid, SEM_MUTEX);
-        if (p->shdata->directionBridge == 1 && p->shdata->currentOnBridge < MOSTEK_POJ) {
-            p->shdata->currentOnShip--;
-            p->shdata->currentOnBridge++;
+        if (shdata->directionBridge == 1 && shdata->currentOnBridge < MOSTEK_POJ) {
+            shdata->currentOnShip--;
+            shdata->currentOnBridge++;
             printf("[PASSENGER %d] schodzi ze statku--- i wchodze na mostek. Obecnie na mostku: %d\n",
-                   p->passenger_id, p->shdata->currentOnBridge);
+                   p->passenger_id, shdata->currentOnBridge);
             V(p->semid, SEM_MUTEX);
             P(p->semid, SEM_BRIDGE);
             break;
@@ -83,9 +84,9 @@ void* passenger_thread(void* arg) {
     }
 
     P(p->semid, SEM_MUTEX);
-    p->shdata->currentOnBridge--;
+    shdata->currentOnBridge--;
     printf("[PASSENGER %d] Zszedl z mostku do portu. Koniec watka. Obecnie na mostku: %d\n",
-    p->passenger_id, p->shdata->currentOnBridge);
+    p->passenger_id, shdata->currentOnBridge);
     V(p->semid, SEM_MUTEX);
     V(p->semid, SEM_BRIDGE);
 
@@ -124,7 +125,7 @@ int main() {
     int semid = create_semaphores(semkey);
     init_semaphore(semid, SEM_MUTEX, 1);
     init_semaphore(semid, SEM_BRIDGE, MOSTEK_POJ);
-    printf("[MAIN] Semafory zainicjalizowane: SEM_MUTEX=1, SEM_BRIDGE=%d, MOSTEK_POJ");
+    printf("[MAIN] Semafory zainicjalizowane: SEM_MUTEX=1, SEM_BRIDGE, MOSTEK_POJ");
 
     int shmid = shmget(shmkey, sizeof(SharedData), IPC_CREAT | 0600);
     if (shmid < 0) {
@@ -132,7 +133,7 @@ int main() {
         exit(1);
     }
 
-    SharedData *shdata = (SharedData*) shmat(shmid, NULL, 0);
+    shdata = (SharedData*) shmat(shmid, NULL, 0);
     if (shdata == (void*)-1) {
         perror("Blad podczas przylaczania segmentu pamieci wspoldzielonej");
         exit(1);
@@ -182,25 +183,23 @@ int main() {
 
 
    /*
-   jakos napisalbym tylko jeszcze zastanowic sie gdzie to dac i czy nie zmienic na dynamiczne
-   i czy moze po prostu caly czas ci sami goscie beda wchodzic i schodzic z mostku na rejs
+   //jakos napisalbym tylko jeszcze zastanowic sie gdzie to dac i czy nie zmienic na dynamiczne
+   //i czy moze po prostu caly czas ci sami goscie beda wchodzic i schodzic z mostku na rejs
     pthread_t passenger_threads[NUM_PASSENGERS];
     PassengerArgs pArgs[NUM_PASSENGERS];
 
      for (int i = 0; i < NUM_PASSENGERS; i++) {
         pArgs[i].passenger_id = i + 1;
         pArgs[i].semid = semid;
-        pArgs[i].shdata = shdata;
 
         if (pthread_create(&passenger_threads[i], NULL, passenger_thread, &pArgs[i]) != 0) {
             perror("Blad podczas tworzenia watku pasazera");
             exit(1);
         }
-        printf("[MAIN] Stworzono wątek pasażera nr %d\n", i + 1);
-        //usleep(100000);
+        //printf("[MAIN] Stworzono wątek pasażera nr %d\n", i + 1);
+        
         }
-    i ogarnac zeby sie program nie konczyl albo sprawdzac endofday albo cos yolo
-   */
+        */
 
     while (wait(NULL) > 0);
 
