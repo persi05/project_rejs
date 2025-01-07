@@ -7,8 +7,9 @@
 #include "shared.h"
 
 int semid;
-SharedData* shdata;
 int shmid;
+SharedData* shdata;
+
 
 void handle_signal1(int sig) {
     P(semid, SEM_MUTEX);
@@ -34,6 +35,24 @@ void unload_passengers() {
         P(semid, SEM_MUTEX);
         if (shdata->currentOnShip == 0 && shdata->currentOnBridge == 0) {
             printf("[KAPITAN STATKU] Wszyscy pasazerowie opuscili statek i most\n");
+            V(semid, SEM_MUTEX);
+            break;
+        }
+        V(semid, SEM_MUTEX);
+        usleep(100000);
+    }
+}
+
+void load_passengers() {
+    printf("[KAPITAN STATKU] Rozpoczynam zaladunek pasazerow+++++\n");
+    P(semid, SEM_MUTEX);
+    shdata->directionBridge = 0;
+    V(semid, SEM_MUTEX);
+
+    while (1) {
+        P(semid, SEM_MUTEX);
+        if (shdata->currentOnBridge == 0) {
+            printf("[KAPITAN STATKU] Wszyscy pasażerowie weszli na statek\n");
             V(semid, SEM_MUTEX);
             break;
         }
