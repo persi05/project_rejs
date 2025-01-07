@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <time.h>
+#include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include "shared.h"
@@ -67,7 +68,7 @@ int main(int argc, char* argv[]) {
             printf("[KAPITAN PORTU] Osiagnieto maksymalna liczbe rejsow (%d). Koncze proces.\n", max_rejs);
             break;
         }
-        int random_time = (rand() % 5 + 8) * 1000000;
+        int random_time = (rand() % 5 + 20) * 1000000;
         usleep(random_time);
         send_signal1();
 
