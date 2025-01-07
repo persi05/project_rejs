@@ -8,13 +8,6 @@
 #include <sys/wait.h> 
 #include "shared.h"
 
-#define STATEK_POJ     5
-#define MOSTEK_POJ     3
-#define T1             3   //czas co ile plynie statek (s)
-#define T2             1   //czas trwania rejsu (s)
-#define MAX_REJS       3
-#define NUM_PASSENGERS 50
-
 typedef struct {
     int passenger_id;
     int semid;
@@ -94,7 +87,7 @@ void* passenger_thread(void* arg) {
 }
 
 void arg_checker(){
-    if (STATEK_POJ <= 0 || MOSTEK_POJ <= 0 || T1 <= 0 || T2 <= 0 || MAX_REJS <= 0) {
+    if (STATEK_POJ <= 0 || MOSTEK_POJ <= 0 || T1 <= 0 || T2 <= 0 || MAXREJS <= 0) {
                 fprintf(stderr, "Niepoprawne argumenty - wszystkie argumenty musza byc dodatnie\n");
                 exit(1);
         }
@@ -155,13 +148,7 @@ int main() {
     }
 
     if (pidKapitanStatku == 0) {
-        char maxRejsArg[10];
-        char t1Arg[10];
-        char t2Arg[10];
-        snprintf(maxRejsArg, sizeof(maxRejsArg), "%d", MAX_REJS);
-        snprintf(t1Arg, sizeof(t1Arg), "%d", T1);
-        snprintf(t2Arg, sizeof(t2Arg), "%d", T2);
-        execl("./kapitan_statku", "kapitan_statku", maxRejsArg, t1Arg, t2Arg, NULL);
+        execl("./kapitan_statku", "kapitan_statku", NULL);
         perror("Blad podczas uruchomienia kapitan_statku (execl)");
         exit(1);
     }
@@ -173,16 +160,14 @@ int main() {
     }
     if (pidKapitanPortu == 0) {
         char pidArg[10];
-        char maxRejsArg[10];
         snprintf(pidArg, sizeof(pidArg), "%d", pidKapitanStatku);
-        snprintf(maxRejsArg, sizeof(maxRejsArg), "%d", MAX_REJS);
-        execl("./kapitan_portu", "kapitan_portu", pidArg, maxRejsArg, NULL);
+        execl("./kapitan_portu", "kapitan_portu", pidArg, NULL);
         perror("Blad podczas uruchamiania procesu kapitan_portu(execl)");
         exit(1);
     }   
 
 
-   /*
+/*
    //jakos napisalbym tylko jeszcze zastanowic sie gdzie to dac i czy nie zmienic na dynamiczne
    //i czy moze po prostu caly czas ci sami goscie beda wchodzic i schodzic z mostku na rejs
     pthread_t passenger_threads[NUM_PASSENGERS];
@@ -199,7 +184,7 @@ int main() {
         //printf("[MAIN] Stworzono wątek pasażera nr %d\n", i + 1);
         
         }
-        */
+    */
 
     while (wait(NULL) > 0);
 

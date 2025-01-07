@@ -13,6 +13,13 @@
 #define SHM_PROJ_ID      'A'
 #define SEM_PROJ_ID      'B'
 
+#define STATEK_POJ     5
+#define MOSTEK_POJ     3
+#define T1             3   //czas co ile plynie statek (s)
+#define T2             1   //czas trwania rejsu (s)
+#define MAXREJS       3
+#define NUM_PASSENGERS 50
+
 typedef struct {
     int currentOnBridge;
     int currentOnShip;
