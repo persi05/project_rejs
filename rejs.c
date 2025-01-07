@@ -20,11 +20,9 @@ void* passenger_thread(void* arg) {
 
     while (1) {
         P(p->semid, SEM_MUTEX);
-        if (shdata->directionBridge == 0) {
-            if (shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ) {
-                V(p->semid, SEM_MUTEX);
-                break;
-            }
+        if (shdata->directionBridge == 0 && shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ) {
+            V(p->semid, SEM_MUTEX);
+            break;
         }
 
         V(p->semid, SEM_MUTEX);
@@ -36,9 +34,16 @@ void* passenger_thread(void* arg) {
     P(p->semid, SEM_BRIDGE);
 
     P(p->semid, SEM_MUTEX);
-    shdata->currentOnBridge++;
-    printf("[PASSENGER %d] wchodzi na mostek+++. Obecnie na mostku: %d, na statku: %d\n",
-           p->passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
+
+    //to nie wiesz jak 39 43-46
+    if (shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ) {
+        shdata->currentOnBridge++;
+        printf("[PASSENGER %d] wchodzi na mostek+++. Obecnie na mostku: %d, na statku: %d\n",
+               p->passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
+    } else {
+        printf("[PASSENGER %d] Nie moze wejsc na mostek, brak miejsca. Obecnie na mostku: %d, na statku: %d\n",
+               p->passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
+    }
     V(p->semid, SEM_MUTEX);
 
     usleep(100000);
@@ -60,10 +65,13 @@ void* passenger_thread(void* arg) {
 
         usleep(100000);
     }
+    printf("tu1");
 
     while (1) {
+        printf("tu2");
         P(p->semid, SEM_MUTEX);
         if (shdata->directionBridge == 1 && shdata->currentOnBridge < MOSTEK_POJ) {
+            printf("tu3");
             shdata->currentOnShip--;
             shdata->currentOnBridge++;
             printf("[PASSENGER %d] schodzi ze statku--- i wchodze na mostek. Obecnie na mostku: %d\n",
@@ -73,9 +81,9 @@ void* passenger_thread(void* arg) {
             break;
         }
         V(p->semid, SEM_MUTEX);
-        usleep(100000);
+        usleep(800000);
     }
-
+printf("tu4");
     P(p->semid, SEM_MUTEX);
     shdata->currentOnBridge--;
     printf("[PASSENGER %d] Zszedl z mostku do portu. Koniec watka. Obecnie na mostku: %d\n",
@@ -184,8 +192,8 @@ int main() {
         //printf("[MAIN] Stworzono wątek pasażera nr %d\n", i + 1);
         
         }
-    */
-
+    
+*/
     while (wait(NULL) > 0);
 
     remove_semaphores(semid);

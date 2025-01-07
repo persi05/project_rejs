@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <time.h>
 #include "shared.h"
 
 int semid;
@@ -34,7 +35,11 @@ void unload_passengers() {
     while (1) {
         P(semid, SEM_MUTEX);
         printf("tutaj4");
+        printf("currentOnShip1: %d, currentOnBridge1: %d\n", shdata->currentOnShip, shdata->currentOnBridge);
+        
         if (shdata->currentOnShip == 0 && shdata->currentOnBridge == 0) {
+            printf("currentOnShip2: %d, currentOnBridge2: %d\n", shdata->currentOnShip, shdata->currentOnBridge);
+
             printf("tutaj2");
             printf("[KAPITAN STATKU] Wszyscy pasazerowie opuscili statek i most\n");
             V(semid, SEM_MUTEX);
