@@ -168,28 +168,24 @@ int main() {
         execl("./kapitan_portu", "kapitan_portu", pidArg, NULL);
         perror("Blad podczas uruchamiania procesu kapitan_portu(execl)");
         exit(1);
-    }   
+    }
 
-
-/*
-   //jakos napisalbym tylko jeszcze zastanowic sie gdzie to dac i czy nie zmienic na dynamiczne
-   //i czy moze po prostu caly czas ci sami goscie beda wchodzic i schodzic z mostku na rejs
     pthread_t passenger_threads[NUM_PASSENGERS];
     PassengerArgs pArgs[NUM_PASSENGERS];
 
      for (int i = 0; i < NUM_PASSENGERS; i++) {
         pArgs[i].passenger_id = i + 1;
-        pArgs[i].semid = semid;
 
         if (pthread_create(&passenger_threads[i], NULL, passenger_thread, &pArgs[i]) != 0) {
             perror("Blad podczas tworzenia watku pasazera");
             exit(1);
         }
-        //printf("[MAIN] Stworzono wątek pasażera nr %d\n", i + 1);
-        
-        }
-    
-*/
+    }
+
+    for (int i = 0; i < NUM_PASSENGERS; i++) {
+        pthread_join(passenger_threads[i], NULL);
+    }
+
     while (wait(NULL) > 0);
 
     remove_semaphores(semid);
