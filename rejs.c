@@ -10,8 +10,8 @@
 
 #define STATEK_POJ     5
 #define MOSTEK_POJ     3
-#define T1             1000   //czas co ile plynie statek (ms)
-#define T2             3000   //czas trwania rejsu (ms)
+#define T1             3   //czas co ile plynie statek (s)
+#define T2             1   //czas trwania rejsu (s)
 #define MAX_REJS       3
 #define NUM_PASSENGERS 50
 
@@ -154,14 +154,16 @@ int main() {
     }
 
     if (pidKapitanStatku == 0) {
-        //jakis char konwerter i execl albo pamiec dzielona? 
-         perror("Blad podczas uruchomienia kapitan_statku (execl)");
-         exit(1);
+        char maxRejsArg[10];
+        char t1Arg[10];
+        char t2Arg[10];
+        snprintf(maxRejsArg, sizeof(maxRejsArg), "%d", MAX_REJS);
+        snprintf(t1Arg, sizeof(t1Arg), "%d", T1);
+        snprintf(t2Arg, sizeof(t2Arg), "%d", T2);
+        execl("./kapitan_statku", "kapitan_statku", maxRejsArg, t1Arg, t2Arg, NULL);
+        perror("Blad podczas uruchomienia kapitan_statku (execl)");
+        exit(1);
     }
-
-    /*
-    ogarnac kapitan_statku
-    */
 
     pid_t pidKapitanPortu = fork();
     if (pidKapitanPortu == -1){

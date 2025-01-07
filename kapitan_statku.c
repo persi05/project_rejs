@@ -9,7 +9,9 @@
 int semid;
 int shmid;
 SharedData* shdata;
-
+int maxRejs;
+int t1;
+int t2;
 
 void handle_signal1(int sig) {
     P(semid, SEM_MUTEX);
@@ -67,12 +69,20 @@ void sail() {
     printf("[KAPITAN STATKU] Wyplywamy w rejs %d i jest %d pasazerow\n", shdata->totalRejsCount, shdata->currentOnShip);
     V(semid, SEM_MUTEX);
 
-    sleep(T2);
+    sleep(t2);
 
     unload_passengers();
 }
 
-int main(){
+int main(int argc, char* argv[]) {
+    if (argc != 4) {
+        perror("Bledna liczba argumentow przy wywolaniu kapitan_portu\n");
+    }
+
+    maxRejs = atoi(argv[1]);
+    t1 = atoi(argv[2]);
+    t2 = atoi(argv[3]);
+
     key_t semkey = ftok(".", SEM_PROJ_ID);
     if (semkey == -1) {
         perror("Blad podczas generowania klucza semafora w kapitan_statku\n");
@@ -101,7 +111,7 @@ int main(){
     if (shdata == (void*)-1) {
         perror("Blad podczas przylaczania segmentu pamieci dzielonej w kapitan_statku\n");
         exit(1);
-    }    
+    }
 
     struct sigaction sa;
 	sa.sa_handler = handle_signal1;
@@ -130,7 +140,7 @@ int main(){
 
         int timeCount = 0;//chyba tak mala nieprecyzyjnosc bedzie ok
 
-        while (timeCount < T1) {
+        while (timeCount < t1) {
             P(semid, SEM_MUTEX);
             int earlyTrip = shdata->earlyTrip;
             int endOfDay = shdata->endOfDay;
@@ -158,9 +168,9 @@ int main(){
         }
 
         P(semid, SEM_MUTEX);
-        if (shdata->totalRejsCount >= R) {
+        if (shdata->totalRejsCount >= maxRejs) {
             V(semid, SEM_MUTEX);
-            printf("[KAPITAN STATKU] Maksymalna liczba rejsow (%d), koniec procedury\n", R);
+            printf("[KAPITAN STATKU] Maksymalna liczba rejsow (%d), koniec procedury\n", maxRejs);
             if (shmdt(shdata) == -1) {
             perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
             }
