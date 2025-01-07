@@ -61,6 +61,17 @@ void load_passengers() {
     }
 }
 
+void sail() {
+    P(semid, SEM_MUTEX);
+    shdata->totalRejsCount++;
+    printf("[KAPITAN STATKU] Wyplywamy w rejs %d i jest %d pasazerow\n", shdata->totalRejsCount, shdata->currentOnShip);
+    V(semid, SEM_MUTEX);
+
+    sleep(T2);
+
+    unload_passengers();
+}
+
 int main(){
     key_t semkey = ftok(".", SEM_PROJ_ID);
     if (semkey == -1) {
