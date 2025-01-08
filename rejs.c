@@ -78,7 +78,13 @@ void* passenger_thread(void* arg) {
             V(semid, SEM_MUTEX);
             break;
         }
-
+        else if (shdata->directionBridge == 1 && shdata->currentOnBridge > 0) {
+        shdata->currentOnBridge--;
+        printf("[PASSENGER %d] Schodzi z mostku. Obecnie na mostku: %d\n",
+               p->passenger_id, shdata->currentOnBridge);
+        V(semid, SEM_MUTEX);
+        pthread_exit(NULL);
+        }
         V(semid, SEM_MUTEX);
 
         usleep(1000000);
@@ -112,7 +118,6 @@ void* passenger_thread(void* arg) {
 
     pthread_exit(NULL);
 }
-
 
 void arg_checker(){
     if (STATEK_POJ <= 0 || MOSTEK_POJ <= 0 || T1 <= 0 || T2 <= 0 || MAXREJS <= 0) {
@@ -206,7 +211,11 @@ int main() {
     }
 
     for (int i = 0; i < NUM_PASSENGERS; i++) {
-        pthread_join(passenger_threads[i], NULL);
+        int a = pthread_join(passenger_threads[i], NULL);
+        if (a != 0){
+            perror("Blad podczas dolaczania watku pasazera\n");
+            exit(1);
+        }
     }
 
     while (wait(NULL) > 0);
