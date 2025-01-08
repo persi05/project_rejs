@@ -18,7 +18,7 @@ int semid;
 
 void* passenger_thread(void* arg) {
     PassengerArgs* p = (PassengerArgs*) arg;
-
+    usleep(100);
     while (1) {
         P(semid, SEM_MUTEX);
         if (shdata->endOfDay == 1) {
@@ -26,7 +26,7 @@ void* passenger_thread(void* arg) {
             printf("[PASSENGER %d] Koniec dnia, watek pasażera zakończony.\n", p->passenger_id);
             pthread_exit(NULL);
         }
-        if (shdata->directionBridge == 0 && shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ && shdata->endOfDay != 1) {
+        else if (shdata->directionBridge == 0 && shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ) {
             V(semid, SEM_MUTEX);
             break;
         }
@@ -44,7 +44,7 @@ void* passenger_thread(void* arg) {
             pthread_exit(NULL);
         }
 
-        if (shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ) {
+        if (shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ && shdata->currentOnBridge < MOSTEK_POJ && shdata->directionBridge == 0) {
             shdata->currentOnBridge++;
             printf("[PASSENGER %d] wchodzi na mostek+++. Obecnie na mostku: %d, na statku: %d\n",
                 p->passenger_id, shdata->currentOnBridge, shdata->currentOnShip);

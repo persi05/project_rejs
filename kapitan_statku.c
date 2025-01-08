@@ -68,7 +68,7 @@ void load_passengers() {
 void sail() {
     P(semid, SEM_MUTEX);
     shdata->totalRejsCount++;
-    printf("[KAPITAN STATKU] Wyplywamy w rejs %d i jest %d pasazerow\n", shdata->totalRejsCount, shdata->currentOnShip);
+    printf("[KAPITAN STATKU] Minal czas, wyplywamy w rejs %d i jest %d pasazerow(lub sig2)\n", shdata->totalRejsCount, shdata->currentOnShip);
     V(semid, SEM_MUTEX);
 
     sleep(T2);
