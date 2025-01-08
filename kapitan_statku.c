@@ -30,17 +30,13 @@ void unload_passengers() {
     P(semid, SEM_MUTEX);
     shdata->directionBridge = 1;
     V(semid, SEM_MUTEX);
-    //printf("tutaj1");
 
     while (1) {
         P(semid, SEM_MUTEX);
-       // printf("tutaj4");
-        printf("currentOnShip1: %d, currentOnBridge1: %d\n", shdata->currentOnShip, shdata->currentOnBridge);
+        //printf("currentOnShip1: %d, currentOnBridge1: %d\n", shdata->currentOnShip, shdata->currentOnBridge);
         
         if (shdata->currentOnShip == 0 && shdata->currentOnBridge == 0) {
-            printf("currentOnShip2: %d, currentOnBridge2: %d\n", shdata->currentOnShip, shdata->currentOnBridge);
-
-           // printf("tutaj2");
+            //printf("currentOnShip2: %d, currentOnBridge2: %d\n", shdata->currentOnShip, shdata->currentOnBridge);
             printf("[KAPITAN STATKU] Wszyscy pasazerowie opuscili statek i most\n");
             V(semid, SEM_MUTEX);
             break;

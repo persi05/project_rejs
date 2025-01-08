@@ -21,6 +21,11 @@ void* passenger_thread(void* arg) {
 
     while (1) {
         P(semid, SEM_MUTEX);
+        if (shdata->endOfDay == 1) {
+            V(semid, SEM_MUTEX);
+            printf("[PASSENGER %d] Koniec dnia, watek pasażera zakończony.\n", p->passenger_id);
+            pthread_exit(NULL);
+        }
         if (shdata->directionBridge == 0 && shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ && shdata->endOfDay != 1) {
             V(semid, SEM_MUTEX);
             break;
@@ -33,6 +38,11 @@ void* passenger_thread(void* arg) {
 
     while (1) {
         P(semid, SEM_MUTEX);
+        if (shdata->endOfDay == 1) {
+            V(semid, SEM_MUTEX);
+            printf("[PASSENGER %d] Koniec dnia, watek pasażera zakończony.\n", p->passenger_id);
+            pthread_exit(NULL);
+        }
 
         if (shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ) {
             shdata->currentOnBridge++;
@@ -54,6 +64,11 @@ void* passenger_thread(void* arg) {
 
     while (1) {
         P(semid, SEM_MUTEX);
+        if (shdata->endOfDay == 1) {
+            V(semid, SEM_MUTEX);
+            printf("[PASSENGER %d] Koniec dnia, watek pasażera zakończony.\n", p->passenger_id);
+            pthread_exit(NULL);
+        }
 
         if (shdata->directionBridge == 0 && shdata->currentOnShip < STATEK_POJ) {
             shdata->currentOnBridge--;
@@ -68,12 +83,16 @@ void* passenger_thread(void* arg) {
 
         usleep(1000000);
     }
-    //printf("\n99999999999999999999999\n");
 
     while (1) {
         P(semid, SEM_MUTEX);
+        if (shdata->endOfDay == 1) {
+            V(semid, SEM_MUTEX);
+            printf("[PASSENGER %d] Koniec dnia, watek pasażera zakończony.\n", p->passenger_id);
+            pthread_exit(NULL);
+        }
+        
         if (shdata->directionBridge == 1 && shdata->currentOnBridge < MOSTEK_POJ) {
-           // printf("\n888888888888888\n");
             shdata->currentOnShip--;
             shdata->currentOnBridge++;
             printf("[PASSENGER %d] schodzi ze statku--- i wchodze na mostek. Obecnie na mostku: %d\n",
