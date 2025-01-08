@@ -30,24 +30,24 @@ void unload_passengers() {
     P(semid, SEM_MUTEX);
     shdata->directionBridge = 1;
     V(semid, SEM_MUTEX);
-    printf("tutaj1");
+    //printf("tutaj1");
 
     while (1) {
         P(semid, SEM_MUTEX);
-        printf("tutaj4");
+       // printf("tutaj4");
         printf("currentOnShip1: %d, currentOnBridge1: %d\n", shdata->currentOnShip, shdata->currentOnBridge);
         
         if (shdata->currentOnShip == 0 && shdata->currentOnBridge == 0) {
             printf("currentOnShip2: %d, currentOnBridge2: %d\n", shdata->currentOnShip, shdata->currentOnBridge);
 
-            printf("tutaj2");
+           // printf("tutaj2");
             printf("[KAPITAN STATKU] Wszyscy pasazerowie opuscili statek i most\n");
             V(semid, SEM_MUTEX);
             break;
         }
         
         V(semid, SEM_MUTEX);
-        usleep(100000);
+        usleep(500000);
     }
 }
 
@@ -59,7 +59,7 @@ void load_passengers() {
 
     while (1) {
         P(semid, SEM_MUTEX);
-        if (shdata->currentOnBridge == 0) {
+        if (shdata->currentOnShip < STATEK_POJ) {
             printf("[KAPITAN STATKU] Wszyscy pasażerowie weszli na statek\n");
             V(semid, SEM_MUTEX);
             break;
@@ -131,10 +131,7 @@ int main() {
     printf("[KAPITAN STATKU]-------START------\n");
 
     while (1) {
-        printf("[KAPITAN STATKU] Rozpoczynam załadunek pasazerow+++++\n");
-        P(semid, SEM_MUTEX);
-        shdata->directionBridge = 0;
-        V(semid, SEM_MUTEX);
+        load_passengers();
 
         int timeCount = 0;//chyba tak mala nieprecyzyjnosc bedzie ok
 
