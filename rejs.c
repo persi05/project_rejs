@@ -21,7 +21,7 @@ void* passenger_thread(void* arg) {
 
     while (1) {
         P(semid, SEM_MUTEX);
-        if (shdata->directionBridge == 0 && shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ) {
+        if (shdata->directionBridge == 0 && shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ && shdata->endOfDay != 1) {
             V(semid, SEM_MUTEX);
             break;
         }

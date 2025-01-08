@@ -162,18 +162,19 @@ int main() {
             timeCount++;
         }
 
+        sail();
+
         P(semid, SEM_MUTEX);
         if (shdata->totalRejsCount >= MAXREJS) {
-            V(semid, SEM_MUTEX);
             printf("[KAPITAN STATKU] Maksymalna liczba rejsow (%d), koniec procedury\n", MAXREJS);
+            shdata->endOfDay = 1;
+            V(semid, SEM_MUTEX);
             if (shmdt(shdata) == -1) {
             perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
             }
             return 0;
         }
         V(semid, SEM_MUTEX);
-
-        sail();
 
         P(semid, SEM_MUTEX);
         if (shdata->endOfDay) {

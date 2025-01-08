@@ -41,6 +41,18 @@ int main(int argc, char* argv[]) {
 
     kapitanStatku_pid = (pid_t)atoi(argv[1]);
 
+    key_t semkey = ftok(".", SEM_PROJ_ID);
+    if (semkey == -1) {
+        perror("Blad podczas generowania klucza semafora w kapitan_statku\n");
+        exit(1);
+    }
+
+    int semid = semget(semkey, NUM_SEMAPHORES, 0600);
+    if (semid < 0) {
+        perror("Blad podczas otwierania semaforow w kapitan_statku\n");
+        exit(1);
+    }
+
     key_t shmkey = ftok(".", SHM_PROJ_ID);
     if (shmkey == -1) {
         perror("Blad podczas generowania klucza w kapitan_port ftok()");
@@ -66,8 +78,18 @@ int main(int argc, char* argv[]) {
             printf("[KAPITAN PORTU] Osiagnieto maksymalna liczbe rejsow (%d). Koncze proces.\n", MAXREJS);
             break;
         }
-        int random_time = (rand() % 5 + 20) * 1000000;
-        usleep(random_time);
+
+        int random_time = (rand() % 501) + 1500;
+        for(int i = 0; i < 100; i++){
+            P(semid, SEM_MUTEX);
+            if(shdata->endOfDay == 1){
+                V(semid, SEM_MUTEX);
+                break;
+            }
+            V(semid, SEM_MUTEX);
+            usleep(random_time*100);
+        }
+
         send_signal1();
 
         char input[10];
