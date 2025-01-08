@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/wait.h> 
+#include <time.h>
 #include "shared.h"
 
 typedef struct {
@@ -26,7 +27,7 @@ void* passenger_thread(void* arg) {
         }
 
         V(semid, SEM_MUTEX);
-        usleep(100000);
+        usleep(500000);
     }
 
     printf("[PASSENGER %d] Probuje wejsc na mostek===\n", p->passenger_id);
@@ -45,7 +46,7 @@ void* passenger_thread(void* arg) {
     }
     V(semid, SEM_MUTEX);
 
-    usleep(100000);
+    usleep(1000000);
 
     while(1){
         P(semid, SEM_MUTEX);
@@ -62,12 +63,14 @@ void* passenger_thread(void* arg) {
 
         V(semid, SEM_MUTEX);
 
-        usleep(100000);
+        usleep(1000000);
     }
+    printf("\n99999999999999999999999\n");
 
     while (1) {
         P(semid, SEM_MUTEX);
         if (shdata->directionBridge == 1 && shdata->currentOnBridge < MOSTEK_POJ) {
+            printf("\n888888888888888\n");
             shdata->currentOnShip--;
             shdata->currentOnBridge++;
             printf("[PASSENGER %d] schodzi ze statku--- i wchodze na mostek. Obecnie na mostku: %d\n",
