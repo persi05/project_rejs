@@ -144,6 +144,7 @@ int main() {
             if (endOfDay) {
                 printf("[KAPITAN STATKU] Sygnal SIGUSR2\n");
                 unload_passengers();
+                printf("[KAPITAN STATKU] koniec procedury przez signal2\n");
                 if (shmdt(shdata) == -1) {
                 perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
                 }
@@ -165,10 +166,10 @@ int main() {
         sail();
 
         P(semid, SEM_MUTEX);
-        if (shdata->totalRejsCount >= MAXREJS) {
-            printf("[KAPITAN STATKU] Maksymalna liczba rejsow (%d), koniec procedury\n", MAXREJS);
-            shdata->endOfDay = 1;
+        if (shdata->endOfDay) {
+            shdata->directionBridge = 1;
             V(semid, SEM_MUTEX);
+            printf("[KAPITAN STATKU] signal2 odebrany podczas rejsu, koniec procedury\n");
             if (shmdt(shdata) == -1) {
             perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
             }
@@ -177,9 +178,11 @@ int main() {
         V(semid, SEM_MUTEX);
 
         P(semid, SEM_MUTEX);
-        if (shdata->endOfDay) {
+        if (shdata->totalRejsCount >= MAXREJS) {
+            shdata->endOfDay = 1;
+            shdata->directionBridge = 1;
             V(semid, SEM_MUTEX);
-            printf("[KAPITAN STATKU] Koniec, signal2 odebrany podczas rejsu\n");
+            printf("[KAPITAN STATKU] Maksymalna liczba rejsow (%d), koniec procedury\n", MAXREJS);
             if (shmdt(shdata) == -1) {
             perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
             }
@@ -187,6 +190,10 @@ int main() {
         }
         V(semid, SEM_MUTEX);
     }
+
+    P(semid, SEM_MUTEX);
+    shdata->directionBridge = 1;
+    V(semid, SEM_MUTEX);
 
     if (shmdt(shdata) == -1) {
         perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
