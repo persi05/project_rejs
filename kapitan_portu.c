@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
     printf("[KAPITAN PORTU]-------START------ wpisz s by wyslac signal2, signal 1 wysyla sie co czas 8-12s\n");
 
     while (1) {
-        if (shdata->totalRejsCount >= MAXREJS) {
+        if (shdata->endOfDay == 1) {
             printf("[KAPITAN PORTU] Osiagnieto maksymalna liczbe rejsow (%d). Koncze proces.\n", MAXREJS);
             break;
         }
@@ -83,11 +83,16 @@ int main(int argc, char* argv[]) {
         for(int i = 0; i < 100; i++){
             P(semid, SEM_MUTEX);
             if(shdata->endOfDay == 1){
+              //  shdata->directionBridge = 1;
                 V(semid, SEM_MUTEX);
-                break;
+                printf("[KAPITAN PORTU] Maksymalna liczba rejsow (%d)/koniec dnia, koniec procedury\n", MAXREJS);
+                if (shmdt(shdata) == -1) {
+                perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_portu");
+                }
+                return 0;
             }
             V(semid, SEM_MUTEX);
-            usleep(random_time*100);
+            usleep(random_time*100); //na 99% 15-20s łącznie z pętlą for
         }
 
         send_signal1();
