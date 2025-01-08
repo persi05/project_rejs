@@ -11,19 +11,29 @@ int semid;
 int shmid;
 SharedData* shdata;
 
-void handle_signal1(int sig) {
+void handle_signal(int sig) {
+    if(sig == SIGUSR1) {
     P(semid, SEM_MUTEX);
     shdata->earlyTrip = 1;
     V(semid, SEM_MUTEX);
     printf("[KAPITAN STATKU] 'signal1' wyplywamy wczesniej\n");
+    }
+    else if (sig == SIGUSR2){
+    P(semid, SEM_MUTEX);
+    shdata->endOfDay = 1;
+    V(semid, SEM_MUTEX);
+    printf("[KAPITAN STATKU] 'signal2' koniec dnia\n");
+    }
 }
 
+/*
 void handle_signal2(int sig) {
     P(semid, SEM_MUTEX);
     shdata->endOfDay = 1;
     V(semid, SEM_MUTEX);
     printf("[KAPITAN STATKU] 'signal2' koniec dnia\n");
 }
+*/
 
 void unload_passengers() {
     printf("[KAPITAN STATKU] Rozpoczynam wyladunek pasazerow-----\n");
@@ -55,7 +65,7 @@ void load_passengers() {
 
     while (1) {
         P(semid, SEM_MUTEX);
-        if (shdata->currentOnShip < STATEK_POJ) {
+        if (shdata->currentOnShip >= STATEK_POJ || shdata->currentOnBridge == 0) {
             printf("[KAPITAN STATKU] Wszyscy pasażerowie weszli na statek\n");
             V(semid, SEM_MUTEX);
             break;
@@ -108,7 +118,7 @@ int main() {
     }
 
     struct sigaction sa;
-	sa.sa_handler = handle_signal1;
+	sa.sa_handler = handle_signal;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 
@@ -116,8 +126,6 @@ int main() {
         perror("blad sigaction signal1 w kapitan_statku\n");
         exit(1);
     }
-
-    sa.sa_handler = handle_signal2;
 
     if (sigaction(SIGUSR2, &sa, NULL) == -1) {
         perror("blad sigaction signal2 w kapitan_statku\n");
