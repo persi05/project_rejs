@@ -74,16 +74,20 @@ int main(int argc, char* argv[]) {
     printf("[KAPITAN PORTU]-------START------ wpisz s by wyslac signal2, signal 1 wysyla sie co czas 8-12s\n");
 
     while (1) {
-        if (shdata->endOfDay == 1) {
+        /*
+chyba nie potrzebne
+        P(semid, SEM_MUTEX);
+        if (shdata->totalRejsCount == MAXREJS) {
             printf("[KAPITAN PORTU] Osiagnieto maksymalna liczbe rejsow (%d). Koncze proces.\n", MAXREJS);
+            V(semid, SEM_MUTEX);
             break;
         }
-
+        V(semid, SEM_MUTEX);
+*/
         int random_time = (rand() % 501) + 1500;
         for(int i = 0; i < 100; i++){
             P(semid, SEM_MUTEX);
             if(shdata->endOfDay == 1){
-              //  shdata->directionBridge = 1;
                 V(semid, SEM_MUTEX);
                 printf("[KAPITAN PORTU] Maksymalna liczba rejsow (%d)/koniec dnia, koniec procedury\n", MAXREJS);
                 if (shmdt(shdata) == -1) {
@@ -114,7 +118,7 @@ int main(int argc, char* argv[]) {
         } else {
             printf("[KAPITAN PORTU] Blad podczas odczytu danych do signal1\n");
         }
-    }
+    }   
 
     if (shmdt(shdata) == -1) {
         perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_portu");

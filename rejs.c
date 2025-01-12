@@ -40,7 +40,7 @@ int main() {
 
     int semid = create_semaphores(semkey);
     init_semaphore(semid, SEM_MUTEX, 1);
-    printf("[MAIN] Semafory zainicjalizowane: SEM_MUTEX=1");
+    printf("[MAIN] Semafory zainicjalizowane: SEM_MUTEX=1\n");
 
     int shmid = shmget(shmkey, sizeof(SharedData), IPC_CREAT | 0600);
     if (shmid < 0) {
@@ -88,6 +88,8 @@ int main() {
         exit(1);
     }
 
+    srand(time(NULL));
+
     for (int i = 0; i < NUM_PASSENGERS; i++) {
         pid_t pidPassenger = fork();
         if (pidPassenger == -1) {
@@ -101,6 +103,7 @@ int main() {
             perror("Blad execl pasazer w main");
             exit(1);
         }
+        usleep(((rand() % 501) + 1500) * 100);
     }
 
     while (wait(NULL) > 0);

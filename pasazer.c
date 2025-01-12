@@ -8,7 +8,7 @@
 int semid;
 SharedData* shdata;
 
-int isEndOfDay(SharedData* shdata, int semid, int passenger_id) {//moze dam ze sprawdza direction po prostu?
+int isEndOfDay(int passenger_id) {//moze dam ze sprawdza direction po prostu?
     P(semid, SEM_MUTEX);
     if (shdata->endOfDay == 1) {
         printf("[PASSENGER %d] Proces zakonczony. Koniec dnia: ", passenger_id);
@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
 
 while (1) {
     /*
-    if (isEndOfDay(semid, shdata, passenger_id)) {
+    if (isEndOfDay(passenger_id)) {
         shmdt(shdata);
         exit(0);
     }
@@ -82,7 +82,7 @@ while (1) {
 usleep(100000);
 
 while (1) {
-    if (isEndOfDay(semid, shdata, passenger_id)) {
+    if (isEndOfDay(passenger_id)) {
         printf("Schodzi do portu\n");
         shmdt(shdata);
         exit(0);
@@ -110,7 +110,7 @@ while (1) {
 }
 
 while (1) {
-    if (isEndOfDay(semid, shdata, passenger_id)) {
+    if (isEndOfDay( passenger_id)) {
         printf("Schodzi na mostek i do portu\n");
         shmdt(shdata);
         exit(0);

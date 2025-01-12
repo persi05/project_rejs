@@ -56,8 +56,8 @@ void load_passengers() {
 
     while (1) {
         P(semid, SEM_MUTEX);
-        if (shdata->currentOnShip >= STATEK_POJ || shdata->currentOnBridge == 0) {
-            printf("[KAPITAN STATKU] Wszyscy pasażerowie weszli na statek\n");
+        if (shdata->currentOnShip == STATEK_POJ) {
+            printf("[KAPITAN STATKU] Wszyscy pasażerowie weszli na statek, koniec miejsca\n");
             V(semid, SEM_MUTEX);
             break;
         }
@@ -69,12 +69,10 @@ void load_passengers() {
 void sail() {
     P(semid, SEM_MUTEX);
     shdata->totalRejsCount++;
-    printf("[KAPITAN STATKU] Minal czas, wyplywamy w rejs %d i jest %d pasazerow(lub sig2)\n", shdata->totalRejsCount, shdata->currentOnShip);
+    printf("[KAPITAN STATKU] Wyplywamy w rejs %d i jest %d pasazerow(lub sig2)\n", shdata->totalRejsCount, shdata->currentOnShip);
     V(semid, SEM_MUTEX);
 
     sleep(T2);
-
-    unload_passengers();
 }
 
 int main() {
@@ -160,9 +158,10 @@ int main() {
 
         sail();
 
+        unload_passengers();
+
         P(semid, SEM_MUTEX);
         if (shdata->endOfDay) {
-            shdata->directionBridge = 1;
             V(semid, SEM_MUTEX);
             printf("[KAPITAN STATKU] signal2 odebrany podczas rejsu, koniec procedury\n");
             if (shmdt(shdata) == -1) {
@@ -170,12 +169,8 @@ int main() {
             }
             return 0;
         }
-        V(semid, SEM_MUTEX);
-
-        P(semid, SEM_MUTEX);
-        if (shdata->totalRejsCount >= MAXREJS) {
+        else if (shdata->totalRejsCount == MAXREJS) {
             shdata->endOfDay = 1;
-            shdata->directionBridge = 1;
             V(semid, SEM_MUTEX);
             printf("[KAPITAN STATKU] Maksymalna liczba rejsow (%d), koniec procedury\n", MAXREJS);
             if (shmdt(shdata) == -1) {
@@ -185,13 +180,4 @@ int main() {
         }
         V(semid, SEM_MUTEX);
     }
-
-    P(semid, SEM_MUTEX);
-    shdata->directionBridge = 1;
-    V(semid, SEM_MUTEX);
-
-    if (shmdt(shdata) == -1) {
-        perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
-    }
-    return 0;
 }
