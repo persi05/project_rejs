@@ -55,19 +55,19 @@ int main(int argc, char* argv[]) {
 
     key_t shmkey = ftok(".", SHM_PROJ_ID);
     if (shmkey == -1) {
-        perror("Blad podczas generowania klucza w kapitan_port ftok()");
+        perror("Blad podczas generowania klucza w kapitan_port ftok()\n");
         exit(1);
     }
 
     int shmid = shmget(shmkey, sizeof(SharedData), 0600);
     if (shmid < 0) {
-        perror("Blad podczas otwierania segmentu pamieci wspoldzielonej w kapitan_portu");
+        perror("Blad podczas otwierania segmentu pamieci wspoldzielonej w kapitan_portu\n");
         exit(1);
     }
 
     shdata = (SharedData*)shmat(shmid, NULL, 0);
     if (shdata == (void*)-1) {
-        perror("[KAPITAN PORTU] Blad podczas laczenia z pamiecia dzielona (shmat)");
+        perror("Blad podczas laczenia z pamiecia dzielona w kapitan_portu\n");
         exit(1);
     }
 

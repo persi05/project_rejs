@@ -9,116 +9,6 @@
 #include <time.h>
 #include "shared.h"
 
-typedef struct {
-    int passenger_id;
-} PassengerArgs;
-
-SharedData *shdata;
-int semid;
-
-void* passenger_thread(void* arg) {
-    PassengerArgs* p = (PassengerArgs*) arg;
-    usleep(100);
-    while (1) {
-        P(semid, SEM_MUTEX);
-        if (shdata->endOfDay == 1) {
-            V(semid, SEM_MUTEX);
-            printf("[PASSENGER %d] Koniec dnia, watek pasażera zakończony.\n", p->passenger_id);
-            pthread_exit(NULL);
-        }
-        else if (shdata->directionBridge == 0 && shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ) {
-            V(semid, SEM_MUTEX);
-            break;
-        }
-        V(semid, SEM_MUTEX);
-        usleep(500000);
-    }
-
-    printf("[PASSENGER %d] Probuje wejsc na mostek===\n", p->passenger_id);
-
-    while (1) {
-        P(semid, SEM_MUTEX);
-        if (shdata->endOfDay == 1) {
-            V(semid, SEM_MUTEX);
-            printf("[PASSENGER %d] Koniec dnia, watek pasażera zakończony.\n", p->passenger_id);
-            pthread_exit(NULL);
-        }
-
-        if (shdata->currentOnBridge + shdata->currentOnShip < STATEK_POJ && shdata->currentOnBridge < MOSTEK_POJ && shdata->directionBridge == 0) {
-            shdata->currentOnBridge++;
-            printf("[PASSENGER %d] wchodzi na mostek+++. Obecnie na mostku: %d, na statku: %d\n",
-                p->passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
-            V(semid, SEM_MUTEX);
-            break;
-        } else {
-            printf("[PASSENGER %d] Nie moze wejsc na mostek, brak miejsca. Obecnie na mostku: %d, na statku: %d\n",
-                p->passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
-        }
-
-        V(semid, SEM_MUTEX);
-
-        usleep(2000000);
-    }
-
-    usleep(1000000);
-
-    while (1) {
-        P(semid, SEM_MUTEX);
-        if (shdata->endOfDay == 1) {
-            V(semid, SEM_MUTEX);
-            printf("[PASSENGER %d] Koniec dnia, watek pasażera zakończony.\n", p->passenger_id);
-            pthread_exit(NULL);
-        }
-
-        if (shdata->directionBridge == 0 && shdata->currentOnShip < STATEK_POJ) {
-            shdata->currentOnBridge--;
-            shdata->currentOnShip++;
-            printf("[PASSENGER %d] Wszedl na statek+++. Obecnie na mostku: %d, na statku: %d\n",
-                   p->passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
-            V(semid, SEM_MUTEX);
-            break;
-        }
-        else if (shdata->directionBridge == 1 && shdata->currentOnBridge > 0) {
-        shdata->currentOnBridge--;
-        printf("[PASSENGER %d] Schodzi z mostku. Obecnie na mostku: %d\n",
-               p->passenger_id, shdata->currentOnBridge);
-        V(semid, SEM_MUTEX);
-        pthread_exit(NULL);
-        }
-        V(semid, SEM_MUTEX);
-
-        usleep(1000000);
-    }
-
-    while (1) {
-        P(semid, SEM_MUTEX);
-        if (shdata->endOfDay == 1) {
-            V(semid, SEM_MUTEX);
-            printf("[PASSENGER %d] Koniec dnia, watek pasażera zakończony.\n", p->passenger_id);
-            pthread_exit(NULL);
-        }
-        
-        if (shdata->directionBridge == 1 && shdata->currentOnBridge < MOSTEK_POJ) {
-            shdata->currentOnShip--;
-            shdata->currentOnBridge++;
-            printf("[PASSENGER %d] schodzi ze statku--- i wchodze na mostek. Obecnie na mostku: %d\n",
-                   p->passenger_id, shdata->currentOnBridge);
-            V(semid, SEM_MUTEX);
-            break;
-        }
-        V(semid, SEM_MUTEX);
-        usleep(800000);
-    }
-
-    P(semid, SEM_MUTEX);
-    shdata->currentOnBridge--;
-    printf("[PASSENGER %d] Zszedl z mostku do portu. Koniec watka. Obecnie na mostku: %d\n",
-           p->passenger_id, shdata->currentOnBridge);
-    V(semid, SEM_MUTEX);
-
-    pthread_exit(NULL);
-}
-
 void arg_checker(){
     if (STATEK_POJ <= 0 || MOSTEK_POJ <= 0 || T1 <= 0 || T2 <= 0 || MAXREJS <= 0) {
                 fprintf(stderr, "Niepoprawne argumenty - wszystkie argumenty musza byc dodatnie\n");
@@ -148,7 +38,7 @@ int main() {
         exit(1);
     }
 
-    semid = create_semaphores(semkey);
+    int semid = create_semaphores(semkey);
     init_semaphore(semid, SEM_MUTEX, 1);
     printf("[MAIN] Semafory zainicjalizowane: SEM_MUTEX=1");
 
@@ -158,7 +48,7 @@ int main() {
         exit(1);
     }
 
-    shdata = (SharedData*) shmat(shmid, NULL, 0);
+    SharedData* shdata = (SharedData*) shmat(shmid, NULL, 0);
     if (shdata == (void*)-1) {
         perror("Blad podczas przylaczania segmentu pamieci wspoldzielonej");
         exit(1);
@@ -198,22 +88,17 @@ int main() {
         exit(1);
     }
 
-    pthread_t passenger_threads[NUM_PASSENGERS];
-    PassengerArgs pArgs[NUM_PASSENGERS];
-
-     for (int i = 0; i < NUM_PASSENGERS; i++) {
-        pArgs[i].passenger_id = i + 1;
-
-        if (pthread_create(&passenger_threads[i], NULL, passenger_thread, &pArgs[i]) != 0) {
-            perror("Blad podczas tworzenia watku pasazera");
+    for (int i = 0; i < NUM_PASSENGERS; i++) {
+        pid_t pidPassenger = fork();
+        if (pidPassenger == -1) {
+            perror("Blad podcazs odpalania pasazer.c w main");
             exit(1);
         }
-    }
-
-    for (int i = 0; i < NUM_PASSENGERS; i++) {
-        int a = pthread_join(passenger_threads[i], NULL);
-        if (a != 0){
-            perror("Blad podczas dolaczania watku pasazera\n");
+        if (pidPassenger == 0) {
+            char pArg[16];
+            snprintf(pArg, sizeof(pArg), "%d", i + 1);
+            execl("./pasazer", "pasazer", pArg, NULL);
+            perror("Blad execl pasazer w main");
             exit(1);
         }
     }

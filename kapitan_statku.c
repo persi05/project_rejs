@@ -26,15 +26,6 @@ void handle_signal(int sig) {
     }
 }
 
-/*
-void handle_signal2(int sig) {
-    P(semid, SEM_MUTEX);
-    shdata->endOfDay = 1;
-    V(semid, SEM_MUTEX);
-    printf("[KAPITAN STATKU] 'signal2' koniec dnia\n");
-}
-*/
-
 void unload_passengers() {
     printf("[KAPITAN STATKU] Rozpoczynam wyladunek pasazerow-----\n");
     P(semid, SEM_MUTEX);
