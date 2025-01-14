@@ -11,6 +11,7 @@
 int semid;
 int shmid;
 SharedData* shdata;
+int a = 0;
 
 volatile sig_atomic_t endOfDaySignal = 0;
 
@@ -29,9 +30,7 @@ void handle_signal(int sig) {
     printf("[KAPITAN STATKU] Odebralem 'signal1'\n");
     }
     else if (sig == SIGUSR2){
-    P(semid, SEM_MUTEX);
-    shdata->endOfDay = 1;
-    V(semid, SEM_MUTEX);
+    endOfDaySignal = 1;
     printf("[KAPITAN STATKU] Odebralem 'signal2' koniec dnia\n");
     }
 }
@@ -41,8 +40,23 @@ void sail() {
     shdata->totalRejsCount++;
     printf("[KAPITAN STATKU] Wyplywamy w rejs %d i jest %d pasazerow(czas lub sig1)\n", shdata->totalRejsCount, shdata->currentOnShip);
     V(semid, SEM_MUTEX);
-    printf("trwa podroz");
-    sleep(T2);
+
+    struct timespec req, rem;
+    req.tv_sec = T2;
+    req.tv_nsec = 0;
+
+     while (nanosleep(&req, &rem) == -1) {
+            if (errno == EINTR) {
+                printf("[KAPITAN STATKU] Otrzymano sig2 podczas rejsu, wznawiam podroz\n");
+                req = rem;
+                a = 1;
+            } 
+            else {
+                perror("nanosleep");
+                exit(1);
+            }
+    }
+
     P(semid, SEM_MUTEX);
     shdata->isTrip = 0;
     V(semid, SEM_MUTEX);
@@ -75,6 +89,7 @@ void unload_passengers() {
             shdata->directionBridge = 1;
             V(semid, SEM_MUTEX);
         }
+        else if (a == 1) break;
     }
 }
 
@@ -134,7 +149,7 @@ int main() {
             P(semid, SEM_MUTEX);
             shdata->directionBridge = 0;
             int earlyTrip = shdata->earlyTrip;
-            int endOfDay = shdata->endOfDay;
+            int endOfDay = endOfDaySignal;
             V(semid, SEM_MUTEX);
 
             if (endOfDay) {
@@ -142,14 +157,12 @@ int main() {
                 P(semid, SEM_MUTEX);
                 shdata->directionBridge = 1;
                 V(semid, SEM_MUTEX);
-                /*printf("[KAPITAN STATKU] Koniec procedury przez signal2\n");
+                printf("[KAPITAN STATKU] Koniec procedury przez signal2\n");
                 if (shmdt(shdata) == -1) {
                 perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
                 exit(1);
                 }
                 return 0;
-                */
-               break;
             }
 
             if (earlyTrip) {
@@ -172,10 +185,14 @@ int main() {
 
         sail();
 
+        P(semid, SEM_MUTEX);
+        shdata->endOfDay = a;
+        V(semid, SEM_MUTEX);
+
         unload_passengers();
 
         P(semid, SEM_MUTEX);
-        if (shdata->endOfDay) {
+        if (endOfDaySignal) {
             V(semid, SEM_MUTEX);
             printf("[KAPITAN STATKU] signal2 odebrany podczas rejsu, koniec procedury\n");
             if (shmdt(shdata) == -1) {

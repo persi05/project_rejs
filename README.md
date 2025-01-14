@@ -3,8 +3,7 @@
 ToDo
 
 - rozwala sie jak wysle sig1 podczas rozladunku (poprawilem ale nadal nie dziala:D)
-- wyslesz sig2 podczas rozladunku tez sie wywala...
 
 
-- kapitan portu trzeba enter kliknac by sie skonczyl unlucky
-nie konczy sie jak dasz s2 podczas rejsu
+- kapitan portu
+  jak dasz s1 podczas rejsu albo normalnie sie skonczy to enter trzeba i sie skonczy xd

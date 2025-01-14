@@ -104,7 +104,7 @@ int main() {
             perror("Blad execl pasazer w main");
             exit(1);
         }
-        usleep(((rand() % 501) + 1500) * 100);
+        //usleep(((rand() % 501) + 1500) * 100);
     }
     
     while (wait(NULL) > 0);
