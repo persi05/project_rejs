@@ -55,13 +55,13 @@ int main(int argc, char* argv[]) {
     }
 
 while (1) {
-    /*
     if (isEndOfDay(passenger_id)) {
-        shmdt(shdata);
+        if (shmdt(shdata) == -1) {
+        perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w pasazer");
+    }
+        printf("Koniec rejsow.\n");
         exit(0);
     }
-    chyba nie musze tego sprawdzac tutaj
-    */
 
     P(semid, SEM_MUTEX);
     if (shdata->directionBridge == 0 && shdata->currentOnBridge < MOSTEK_POJ) {

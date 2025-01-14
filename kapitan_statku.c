@@ -69,7 +69,7 @@ void load_passengers() {
 void sail() {
     P(semid, SEM_MUTEX);
     shdata->totalRejsCount++;
-    printf("[KAPITAN STATKU] Wyplywamy w rejs %d i jest %d pasazerow(lub sig2)\n", shdata->totalRejsCount, shdata->currentOnShip);
+    printf("[KAPITAN STATKU] Wyplywamy w rejs %d i jest %d pasazerow(czas lub sig2)\n", shdata->totalRejsCount, shdata->currentOnShip);
     V(semid, SEM_MUTEX);
 
     sleep(T2);
@@ -137,7 +137,7 @@ int main() {
             if (endOfDay) {
                 printf("[KAPITAN STATKU] Sygnal SIGUSR2\n");
                 unload_passengers();
-                printf("[KAPITAN STATKU] koniec procedury przez signal2\n");
+                printf("[KAPITAN STATKU] Koniec procedury przez signal2\n");
                 if (shmdt(shdata) == -1) {
                 perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
                 }

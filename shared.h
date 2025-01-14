@@ -17,7 +17,7 @@
 #define T1             3   //czas co ile plynie statek (s)
 #define T2             1   //czas trwania rejsu (s)
 #define MAXREJS        3
-#define NUM_PASSENGERS MAXREJS*STATEK_POJ
+#define NUM_PASSENGERS MAXREJS*STATEK_POJ+MAXREJS*MOSTEK_POJ+5
 
 typedef struct {
     int currentOnBridge;

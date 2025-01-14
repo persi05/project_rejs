@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-#include <time.h>
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -35,9 +34,8 @@ void clear_buffer() {
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         perror("Bledna liczba argumentow przy wywolaniu kapitan_portu\n");
+        exit(1);
     }
-
-    srand(time(NULL));
 
     kapitanStatku_pid = (pid_t)atoi(argv[1]);
 
@@ -71,59 +69,49 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    printf("[KAPITAN PORTU]-------START------ wpisz s by wyslac signal2, signal 1 wysyla sie co czas 8-12s\n");
+    printf("[KAPITAN PORTU]-------START------ wpisz 's' by wyslac signal1(odplyniecie), 'e' signal2(koniec dnia)\n");
 
     while (1) {
-        /*
-chyba nie potrzebne
         P(semid, SEM_MUTEX);
-        if (shdata->totalRejsCount == MAXREJS) {
-            printf("[KAPITAN PORTU] Osiagnieto maksymalna liczbe rejsow (%d). Koncze proces.\n", MAXREJS);
+        if(shdata->endOfDay == 1){
             V(semid, SEM_MUTEX);
-            break;
+            printf("[KAPITAN PORTU] Maksymalna liczba rejsow (%d) lub koniec dnia, koniec procedury\n", MAXREJS);
+            if (shmdt(shdata) == -1) {
+            perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_portu");
+            }
+            return 0;
         }
         V(semid, SEM_MUTEX);
-*/
-        int random_time = (rand() % 501) + 1500;
-        for(int i = 0; i < 100; i++){
-            P(semid, SEM_MUTEX);
-            if(shdata->endOfDay == 1){
-                V(semid, SEM_MUTEX);
-                printf("[KAPITAN PORTU] Maksymalna liczba rejsow (%d)/koniec dnia, koniec procedury\n", MAXREJS);
-                if (shmdt(shdata) == -1) {
-                perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_portu");
-                }
-                return 0;
-            }
-            V(semid, SEM_MUTEX);
-            usleep(random_time*100); //na 99% 15-20s łącznie z pętlą for
-        }
-
-        send_signal1();
-
+/*
         char input[10];
-
-        clear_buffer();
 
         if (fgets(input, sizeof(input), stdin) != NULL) {
             int length = strlen(input);
-            if (length > 8) {
-                printf("[KAPITAN PORTU] Wprowadzone dane do wyslania signal1 za dlugie. Wpisz tylko 's'\n");
-                clear_buffer();
+            if (length > 2) {
+                printf("[KAPITAN PORTU] Wprowadzone dane do wyslania signal1 za dlugie. Wpisz tylko 's' lub 'e'\n");
             }
-            if (strncmp(input, "s", 1) == 0) {
+            else if (strncmp(input, "s", 1) == 0) {
+                send_signal1();
+                printf("[KAPITAN PORTU] Odczytuje i wysylam sygnal 1 (wczesniejesze odplyniecie)\n");
+            }
+            else if (strncmp(input, "e", 1) == 0) {
                 send_signal2();
+                printf("[KAPITAN PORTU] Odczytuje i wysylam sygnal 2 (koniec dnia)");
+                printf("[Kapitan PORTU] Koniec dnia. Koniec procedury");
                 break;
             }
-        } else {
+            else {
+                printf("[KAPITAN PORTU] Nieprawidlowa komenda. Wpisz 's' lub 'e'\n");
+            } 
+        }
+        else {
             printf("[KAPITAN PORTU] Blad podczas odczytu danych do signal1\n");
         }
-    }   
-
-    if (shmdt(shdata) == -1) {
-        perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_portu");
+*/
     }
 
-    printf("[KAPITAN PORTU]------KONIEC------\n");
+    if (shmdt(shdata) == -1) {
+        perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_portu\n");
+    }
     return 0;
 }

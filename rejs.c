@@ -105,7 +105,7 @@ int main() {
         }
         usleep(((rand() % 501) + 1500) * 100);
     }
-
+    
     while (wait(NULL) > 0);
 
     remove_semaphores(semid);
