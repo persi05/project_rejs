@@ -70,6 +70,8 @@ int main(int argc, char* argv[]) {
     }
 
     printf("[KAPITAN PORTU]-------START------ wpisz 's' by wyslac signal1(odplyniecie), 'e' signal2(koniec dnia)\n");
+    
+    char input;
 
     while (1) {
         printf("chodz1\n");
@@ -84,8 +86,8 @@ int main(int argc, char* argv[]) {
         }
         V(semid, SEM_MUTEX);
 
-        char input;
         input = getchar();
+        if (input == '\n') continue;
         while (getchar() != '\n');
 
         if (input == 's') {
@@ -99,7 +101,6 @@ int main(int argc, char* argv[]) {
         else {
             printf("[KAPITAN PORTU] Nieprawidlowy sygnal. Sprobuj ponownie.\n");
         }
-        fflush(0);
         printf("chodz2\n");
     }
 

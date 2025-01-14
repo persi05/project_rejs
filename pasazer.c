@@ -8,7 +8,7 @@
 int semid;
 SharedData* shdata;
 
-int isEndOfDay(int passenger_id) {//moze dam ze sprawdza direction po prostu?
+int isEndOfDay(int passenger_id) {
     P(semid, SEM_MUTEX);
     if (shdata->endOfDay == 1) {
         printf("[PASSENGER %d] Proces zakonczony. Koniec dnia: ", passenger_id);
@@ -57,10 +57,10 @@ int main(int argc, char* argv[]) {
 while (1) {
     if (isEndOfDay(passenger_id)) {
         if (shmdt(shdata) == -1) {
-        perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w pasazer");
-    }
+            perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w pasazer");
+        }
         printf("Koniec rejsow.\n");
-        exit(0);
+        return(0);
     }
 
     P(semid, SEM_MUTEX);
@@ -71,10 +71,11 @@ while (1) {
         V(semid, SEM_MUTEX);
         break;
     }
-    else {
+    /*else {
         //printf("[PASSENGER %d] Nie moze wejsc na mostek, brak miejsca lub zly kierunek. Czekam mostek: %d, statek: %d\n",
         //      passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
     }
+    */
     V(semid, SEM_MUTEX);
     usleep(100000);
 }
@@ -84,22 +85,23 @@ usleep(100000);
 while (1) {
     if (isEndOfDay(passenger_id)) {
         printf("Schodzi do portu\n");
-        shmdt(shdata);
+        if (shmdt(shdata) == -1) {
+            perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w pasazer");
+        }
         exit(0);
     }
 
     P(semid, SEM_MUTEX);
-    if (shdata->directionBridge == 0 && shdata->currentOnShip < STATEK_POJ && shdata->isTrip == 0) {
+    if (shdata->directionBridge == 0 && shdata->currentOnShip < STATEK_POJ && shdata->isTrip == 0 && shdata->earlyTrip == 0) {
         shdata->currentOnBridge--;
         shdata->currentOnShip++;
         printf("[PASSENGER %d] Wszedl na statek. mostek: %d, statek: %d\n",
                passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
         V(semid, SEM_MUTEX);
         break;
-    } else if (shdata->directionBridge == 1) {//usuwam && shdata->currentOnBridge > 0 stad usunalem  i tam na dole isTrip
+    } else if (shdata->directionBridge == 1) {// stad usunalem  i tam na dole isTrip
         shdata->currentOnBridge--;
-        printf("[PASSENGER %d] Schodzi z mostku. mostek: %d\n",
-               passenger_id, shdata->currentOnBridge);
+        printf("[PASSENGER %d] Schodzi z mostku. mostek: %d\n", passenger_id, shdata->currentOnBridge);
         V(semid, SEM_MUTEX);
         shmdt(shdata);
         exit(0);
@@ -110,14 +112,16 @@ while (1) {
 }
 
 while (1) {
-    if (isEndOfDay( passenger_id)) {
+    if (isEndOfDay(passenger_id)) {
         printf("Schodzi na mostek i do portu\n");
-        shmdt(shdata);
-        exit(0);
+        if (shmdt(shdata) == -1) {
+        perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w pasazer");
+    }
+        return(0);
     }
 
     P(semid, SEM_MUTEX);
-    if (shdata->directionBridge == 1 && shdata->currentOnBridge < MOSTEK_POJ) {
+    if (shdata->directionBridge == 1 && shdata->currentOnBridge < MOSTEK_POJ && shdata->earlyTrip == 0) {
         shdata->currentOnShip--;
         shdata->currentOnBridge++;
         printf("[PASSENGER %d] Schodzi ze statku i wchodzi na mostek. mostek: %d, statek: %d\n",
@@ -131,8 +135,7 @@ while (1) {
     usleep(100000);
     P(semid, SEM_MUTEX);
     shdata->currentOnBridge--;
-    printf("[PASSENGER %d] Schodzi z mostku do portu. Koniec procesu.\n",
-           passenger_id);
+    printf("[PASSENGER %d] Schodzi z mostku do portu. Koniec procesu.\n", passenger_id);
     V(semid, SEM_MUTEX);
 
     if (shmdt(shdata) == -1) {

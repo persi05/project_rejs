@@ -31,10 +31,12 @@ void sail() {
     shdata->totalRejsCount++;
     printf("[KAPITAN STATKU] Wyplywamy w rejs %d i jest %d pasazerow(czas lub sig1)\n", shdata->totalRejsCount, shdata->currentOnShip);
     V(semid, SEM_MUTEX);
-    
+
     printf("trwa podroz");
     sleep(T2);
+    P(semid, SEM_MUTEX);
     shdata->isTrip = 0;
+    V(semid, SEM_MUTEX);
 }
 
 void unload_passengers() {
@@ -42,28 +44,29 @@ void unload_passengers() {
     P(semid, SEM_MUTEX);
     shdata->directionBridge = 1;
     V(semid, SEM_MUTEX);
-    //printf("gow3");
     while (1) {
-        //printf("gow1");
         P(semid, SEM_MUTEX);
-       // printf("gow2");
+        int j = shdata->currentOnShip;
+        int i = shdata->currentOnBridge;
+        int k = shdata->earlyTrip;
+        V(semid, SEM_MUTEX);
         fflush(0);
-        if (shdata->currentOnShip == 0 && shdata->currentOnBridge == 0) {
+        if (j == 0 && i == 0 && k == 0) {
             printf("[KAPITAN STATKU] Nikogo nie ma na statku i mostku(wszyscy opuscili jesli byli)\n");
-            V(semid, SEM_MUTEX);
             break;
         }
-        /*else if (shdata->earlyTrip == 1) {
-           printf("2");
+        else if (k == 1) {
+            printf("2");
+            P(semid, SEM_MUTEX);
             shdata->isTrip = 1;
+            //shdata->earlyTrip = 0;
             shdata->directionBridge = 0;
+            V(semid, SEM_MUTEX);
             sail();
+            P(semid, SEM_MUTEX);
             shdata->directionBridge = 1;
+            V(semid, SEM_MUTEX);
         }
-        */
-        //printf("gow7");
-       // printf("\n flaga earlyTrip %d \n", shdata->earlyTrip);
-        V(semid, SEM_MUTEX);
     }
 }
 
