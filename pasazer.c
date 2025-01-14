@@ -72,8 +72,8 @@ while (1) {
         break;
     }
     else {
-        printf("[PASSENGER %d] Nie moze wejsc na mostek, brak miejsca lub zly kierunek. Czekam mostek: %d, statek: %d\n",
-               passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
+        //printf("[PASSENGER %d] Nie moze wejsc na mostek, brak miejsca lub zly kierunek. Czekam mostek: %d, statek: %d\n",
+        //      passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
     }
     V(semid, SEM_MUTEX);
     usleep(100000);
@@ -96,7 +96,7 @@ while (1) {
                passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
         V(semid, SEM_MUTEX);
         break;
-    } else if (shdata->directionBridge == 1) {//usuwam && shdata->currentOnBridge > 0
+    } else if (shdata->directionBridge == 1) {//usuwam && shdata->currentOnBridge > 0 stad usunalem  i tam na dole isTrip
         shdata->currentOnBridge--;
         printf("[PASSENGER %d] Schodzi z mostku. mostek: %d\n",
                passenger_id, shdata->currentOnBridge);

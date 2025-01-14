@@ -16,14 +16,25 @@ void handle_signal(int sig) {
     P(semid, SEM_MUTEX);
     shdata->earlyTrip = 1;
     V(semid, SEM_MUTEX);
-    printf("[KAPITAN STATKU] 'signal1' wyplywamy wczesniej\n");
+    printf("[KAPITAN STATKU] Odebralem 'signal1'\n");
     }
     else if (sig == SIGUSR2){
     P(semid, SEM_MUTEX);
     shdata->endOfDay = 1;
     V(semid, SEM_MUTEX);
-    printf("[KAPITAN STATKU] 'signal2' koniec dnia\n");
+    printf("[KAPITAN STATKU] Odebralem 'signal2' koniec dnia\n");
     }
+}
+
+void sail() {
+    P(semid, SEM_MUTEX);
+    shdata->totalRejsCount++;
+    printf("[KAPITAN STATKU] Wyplywamy w rejs %d i jest %d pasazerow(czas lub sig1)\n", shdata->totalRejsCount, shdata->currentOnShip);
+    V(semid, SEM_MUTEX);
+    
+    printf("trwa podroz");
+    sleep(T2);
+    shdata->isTrip = 0;
 }
 
 void unload_passengers() {
@@ -31,48 +42,29 @@ void unload_passengers() {
     P(semid, SEM_MUTEX);
     shdata->directionBridge = 1;
     V(semid, SEM_MUTEX);
-
+    //printf("gow3");
     while (1) {
+        //printf("gow1");
         P(semid, SEM_MUTEX);
-        //printf("currentOnShip1: %d, currentOnBridge1: %d\n", shdata->currentOnShip, shdata->currentOnBridge);
-        
+       // printf("gow2");
+        fflush(0);
         if (shdata->currentOnShip == 0 && shdata->currentOnBridge == 0) {
-            //printf("currentOnShip2: %d, currentOnBridge2: %d\n", shdata->currentOnShip, shdata->currentOnBridge);
-            printf("[KAPITAN STATKU] Wszyscy pasazerowie opuscili statek i most\n");
+            printf("[KAPITAN STATKU] Nikogo nie ma na statku i mostku(wszyscy opuscili jesli byli)\n");
             V(semid, SEM_MUTEX);
             break;
         }
-        
-        V(semid, SEM_MUTEX);
-        usleep(500000);
-    }
-}
-
-void load_passengers() {
-    printf("[KAPITAN STATKU] Rozpoczynam zaladunek pasazerow+++++\n");
-    P(semid, SEM_MUTEX);
-    shdata->directionBridge = 0;
-    V(semid, SEM_MUTEX);
-
-    while (1) {
-        P(semid, SEM_MUTEX);
-        if (shdata->currentOnShip == STATEK_POJ) {
-            printf("[KAPITAN STATKU] Wszyscy pasażerowie weszli na statek, koniec miejsca\n");
-            V(semid, SEM_MUTEX);
-            break;
+        /*else if (shdata->earlyTrip == 1) {
+           printf("2");
+            shdata->isTrip = 1;
+            shdata->directionBridge = 0;
+            sail();
+            shdata->directionBridge = 1;
         }
+        */
+        //printf("gow7");
+       // printf("\n flaga earlyTrip %d \n", shdata->earlyTrip);
         V(semid, SEM_MUTEX);
-        usleep(100000);
     }
-}
-
-void sail() {
-    P(semid, SEM_MUTEX);
-    shdata->totalRejsCount++;
-    printf("[KAPITAN STATKU] Wyplywamy w rejs %d i jest %d pasazerow(czas lub sig2)\n", shdata->totalRejsCount, shdata->currentOnShip);
-    V(semid, SEM_MUTEX);
-
-    sleep(T2);
 }
 
 int main() {
@@ -124,22 +116,25 @@ int main() {
     printf("[KAPITAN STATKU]-------START------\n");
 
     while (1) {
-        load_passengers();
-
         int timeCount = 0;//chyba tak mala nieprecyzyjnosc bedzie ok
-
-        while (timeCount < T1) {
+        printf("[KAPITAN STATKU] Rozpoczynam zaladunek pasazerow+++++\n");
+        int waitTime = T1;
+        while (timeCount < waitTime) {
             P(semid, SEM_MUTEX);
+            shdata->directionBridge = 0;
             int earlyTrip = shdata->earlyTrip;
             int endOfDay = shdata->endOfDay;
             V(semid, SEM_MUTEX);
 
             if (endOfDay) {
                 printf("[KAPITAN STATKU] Sygnal SIGUSR2\n");
-                unload_passengers();
+                P(semid, SEM_MUTEX);
+                shdata->directionBridge = 1;
+                V(semid, SEM_MUTEX);
                 printf("[KAPITAN STATKU] Koniec procedury przez signal2\n");
                 if (shmdt(shdata) == -1) {
                 perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
+                exit(1);
                 }
                 return 0;
             }
@@ -147,14 +142,20 @@ int main() {
             if (earlyTrip) {
                 P(semid, SEM_MUTEX);
                 shdata->earlyTrip = 0;
+                shdata->isTrip = 1;
                 V(semid, SEM_MUTEX);
                 printf("[KAPITAN STATKU] Sygnal SIGUSR1 - odplywam\n");
                 break;
             }
-
-            sleep(1);
             timeCount++;
+            printf("time: %d\n", timeCount);
+            sleep(1);
+
         }
+
+        P(semid, SEM_MUTEX);
+        shdata->isTrip = 1;
+        V(semid, SEM_MUTEX);
 
         sail();
 

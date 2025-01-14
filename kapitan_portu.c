@@ -13,7 +13,7 @@ SharedData* shdata;
 void send_signal1() {
     if (kill(kapitanStatku_pid, SIGUSR1) == -1) {
         perror("[KAPITAN PORTU] Blad podczas wysylania 'signal1' do kapitan_statku\n");
-        return;
+        exit(1);
     }
     printf("[KAPITAN PORTU] Wyslano 'signal1' (wczesniejsze wyplyniecie) do kapitan_statku\n");
 }
@@ -21,7 +21,7 @@ void send_signal1() {
 void send_signal2() {
     if (kill(kapitanStatku_pid, SIGUSR2) == -1) {
         perror("[KAPITAN PORTU] Blad podczas wysylania 'signal2' do kapitan_statku\n");
-        return;
+        exit(1);
     }
     printf("[KAPITAN PORTU] Wyslano 'signal2' (zakonczenie dnia) do kapitan_statku\n");
 }
@@ -72,6 +72,7 @@ int main(int argc, char* argv[]) {
     printf("[KAPITAN PORTU]-------START------ wpisz 's' by wyslac signal1(odplyniecie), 'e' signal2(koniec dnia)\n");
 
     while (1) {
+        printf("chodz1\n");
         P(semid, SEM_MUTEX);
         if(shdata->endOfDay == 1){
             V(semid, SEM_MUTEX);
@@ -82,32 +83,24 @@ int main(int argc, char* argv[]) {
             return 0;
         }
         V(semid, SEM_MUTEX);
-/*
-        char input[10];
 
-        if (fgets(input, sizeof(input), stdin) != NULL) {
-            int length = strlen(input);
-            if (length > 2) {
-                printf("[KAPITAN PORTU] Wprowadzone dane do wyslania signal1 za dlugie. Wpisz tylko 's' lub 'e'\n");
-            }
-            else if (strncmp(input, "s", 1) == 0) {
-                send_signal1();
-                printf("[KAPITAN PORTU] Odczytuje i wysylam sygnal 1 (wczesniejesze odplyniecie)\n");
-            }
-            else if (strncmp(input, "e", 1) == 0) {
-                send_signal2();
-                printf("[KAPITAN PORTU] Odczytuje i wysylam sygnal 2 (koniec dnia)");
-                printf("[Kapitan PORTU] Koniec dnia. Koniec procedury");
-                break;
-            }
-            else {
-                printf("[KAPITAN PORTU] Nieprawidlowa komenda. Wpisz 's' lub 'e'\n");
-            } 
+        char input;
+        input = getchar();
+        while (getchar() != '\n');
+
+        if (input == 's') {
+            send_signal1();
+        }
+        else if (input == 'e') {
+            send_signal2();
+            printf("[KAPITAN PORTU] Koniec dnia. Koniec procedury\n");
+            break;
         }
         else {
-            printf("[KAPITAN PORTU] Blad podczas odczytu danych do signal1\n");
+            printf("[KAPITAN PORTU] Nieprawidlowy sygnal. Sprobuj ponownie.\n");
         }
-*/
+        fflush(0);
+        printf("chodz2\n");
     }
 
     if (shmdt(shdata) == -1) {
