@@ -5,11 +5,14 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <time.h>
+#include <errno.h> 
 #include "shared.h"
 
 int semid;
 int shmid;
 SharedData* shdata;
+
+volatile sig_atomic_t endOfDaySignal = 0;
 
 void handle_signal(int sig) {
     if(sig == SIGUSR1) {
@@ -38,7 +41,6 @@ void sail() {
     shdata->totalRejsCount++;
     printf("[KAPITAN STATKU] Wyplywamy w rejs %d i jest %d pasazerow(czas lub sig1)\n", shdata->totalRejsCount, shdata->currentOnShip);
     V(semid, SEM_MUTEX);
-
     printf("trwa podroz");
     sleep(T2);
     P(semid, SEM_MUTEX);
@@ -66,7 +68,6 @@ void unload_passengers() {
             printf("2");
             P(semid, SEM_MUTEX);
             shdata->isTrip = 1;
-            //shdata->earlyTrip = 0;
             shdata->directionBridge = 0;
             V(semid, SEM_MUTEX);
             sail();
@@ -111,7 +112,7 @@ int main() {
     struct sigaction sa;
 	sa.sa_handler = handle_signal;
 	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
+	sa.sa_flags = SA_RESTART;
 
     if (sigaction(SIGUSR1, &sa, NULL) == -1) {
         perror("blad sigaction signal1 w kapitan_statku\n");
@@ -141,12 +142,14 @@ int main() {
                 P(semid, SEM_MUTEX);
                 shdata->directionBridge = 1;
                 V(semid, SEM_MUTEX);
-                printf("[KAPITAN STATKU] Koniec procedury przez signal2\n");
+                /*printf("[KAPITAN STATKU] Koniec procedury przez signal2\n");
                 if (shmdt(shdata) == -1) {
                 perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
                 exit(1);
                 }
                 return 0;
+                */
+               break;
             }
 
             if (earlyTrip) {

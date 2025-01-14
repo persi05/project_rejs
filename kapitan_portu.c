@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
     }
 
     printf("[KAPITAN PORTU]-------START------ wpisz 's' by wyslac signal1(odplyniecie), 'e' signal2(koniec dnia)\n");
-    
+
     char input;
 
     while (1) {
@@ -78,6 +78,7 @@ int main(int argc, char* argv[]) {
         if(shdata->endOfDay == 1){
             V(semid, SEM_MUTEX);
             printf("[KAPITAN PORTU] Maksymalna liczba rejsow (%d) lub koniec dnia, koniec procedury\n", MAXREJS);
+            fflush(0);
             if (shmdt(shdata) == -1) {
             perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_portu");
             }
