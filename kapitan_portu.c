@@ -74,7 +74,6 @@ int main(int argc, char* argv[]) {
     char input;
 
     while (1) {
-        printf("chodz1\n");
         P(semid, SEM_MUTEX);
         if(shdata->endOfDay == 1){
             V(semid, SEM_MUTEX);
@@ -82,6 +81,7 @@ int main(int argc, char* argv[]) {
             if (shmdt(shdata) == -1) {
             perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_portu");
             }
+            fflush(0);
             return 0;
         }
         V(semid, SEM_MUTEX);

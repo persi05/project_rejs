@@ -15,6 +15,13 @@ void handle_signal(int sig) {
     if(sig == SIGUSR1) {
     P(semid, SEM_MUTEX);
     shdata->earlyTrip = 1;
+    if(shdata->isTrip == 1) {
+        shdata->endOfDay = 1;
+        shdata->directionBridge = 1;
+        V(semid, SEM_MUTEX);
+        printf("Wyslano sig1 podczas rejsu - kataklizm wodny. Koncze procedure\n");
+        exit(1);
+    }
     V(semid, SEM_MUTEX);
     printf("[KAPITAN STATKU] Odebralem 'signal1'\n");
     }
