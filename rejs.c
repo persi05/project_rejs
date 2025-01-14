@@ -57,6 +57,7 @@ int main() {
     shdata->currentOnBridge = 0;
     shdata->currentOnShip   = 0;
     shdata->totalRejsCount  = 0;
+    shdata->isTrip          = 0;
     shdata->earlyTrip       = 0;
     shdata->endOfDay        = 0;
     shdata->directionBridge = 0;

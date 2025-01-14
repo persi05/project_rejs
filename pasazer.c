@@ -89,7 +89,7 @@ while (1) {
     }
 
     P(semid, SEM_MUTEX);
-    if (shdata->directionBridge == 0 && shdata->currentOnShip < STATEK_POJ) {
+    if (shdata->directionBridge == 0 && shdata->currentOnShip < STATEK_POJ && shdata->isTrip == 0) {
         shdata->currentOnBridge--;
         shdata->currentOnShip++;
         printf("[PASSENGER %d] Wszedl na statek. mostek: %d, statek: %d\n",

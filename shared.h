@@ -24,6 +24,7 @@ typedef struct {
     int currentOnShip;
     int totalRejsCount;
     int earlyTrip;
+    int isTrip;
     int endOfDay;
     int directionBridge;   //0 to w strone statku, 1 w strone portu
 } SharedData;
