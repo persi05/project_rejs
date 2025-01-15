@@ -29,12 +29,12 @@ int main() {
     
     key_t semkey = ftok(".", SEM_PROJ_ID);
     if (semkey == -1) {
-        perror("Blad podczas generowania klucza w ftok()");
+        perror("Blad podczas generowania klucza w ftok()\n");
         exit(1);
     }
     key_t shmkey = ftok(".", SHM_PROJ_ID);
     if (shmkey == -1) {
-        perror("Blad podczas generowania klucza w ftok()");
+        perror("Blad podczas generowania klucza w ftok()\n");
         exit(1);
     }
 
@@ -44,13 +44,13 @@ int main() {
 
     int shmid = shmget(shmkey, sizeof(SharedData), IPC_CREAT | 0600);
     if (shmid < 0) {
-        perror("Blad podczas tworzenia segmentu pamieci wspoldzielonej");
+        perror("Blad podczas tworzenia segmentu pamieci wspoldzielonej\n");
         exit(1);
     }
 
     SharedData* shdata = (SharedData*) shmat(shmid, NULL, 0);
     if (shdata == (void*)-1) {
-        perror("Blad podczas przylaczania segmentu pamieci wspoldzielonej");
+        perror("Blad podczas przylaczania segmentu pamieci wspoldzielonej\n");
         exit(1);
     }
 
@@ -66,26 +66,26 @@ int main() {
 
     pid_t pidKapitanStatku = fork();
     if (pidKapitanStatku == -1){
-        perror("Blad podczas tworzenia procesu kapitan_statku");
+        perror("Blad podczas tworzenia procesu kapitan_statku\n");
         exit(1);
     }
 
     if (pidKapitanStatku == 0) {
         execl("./kapitan_statku", "kapitan_statku", NULL);
-        perror("Blad podczas uruchomienia kapitan_statku (execl)");
+        perror("Blad podczas uruchomienia kapitan_statku (execl)\n");
         exit(1);
     }
 
     pid_t pidKapitanPortu = fork();
     if (pidKapitanPortu == -1){
-        perror("Blad podczas tworzenia procesu kapitan_portu");
+        perror("Blad podczas tworzenia procesu kapitan_portu\n");
         exit(1);
     }
     if (pidKapitanPortu == 0) {
         char pidArg[10];
         snprintf(pidArg, sizeof(pidArg), "%d", pidKapitanStatku);
         execl("./kapitan_portu", "kapitan_portu", pidArg, NULL);
-        perror("Blad podczas uruchamiania procesu kapitan_portu(execl)");
+        perror("Blad podczas uruchamiania procesu kapitan_portu(execl)\n");
         exit(1);
     }
 
@@ -94,14 +94,14 @@ int main() {
     for (int i = 0; i < NUM_PASSENGERS; i++) {
         pid_t pidPassenger = fork();
         if (pidPassenger == -1) {
-            perror("Blad podcazs odpalania pasazer.c w main");
+            perror("Blad podcazs odpalania pasazer.c w main\n");
             exit(1);
         }
         if (pidPassenger == 0) {
             char pArg[16];
             snprintf(pArg, sizeof(pArg), "%d", i + 1);
             execl("./pasazer", "pasazer", pArg, NULL);
-            perror("Blad execl pasazer w main");
+            perror("Blad execl pasazer w main\n");
             exit(1);
         }
         //usleep(((rand() % 501) + 1500) * 100);
@@ -111,10 +111,10 @@ int main() {
 
     remove_semaphores(semid);
     if (shmdt(shdata) == -1) {
-        perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej");
+        perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej\n");
     }
     if (shmctl(shmid, IPC_RMID, NULL) == -1) {
-        perror("Blad podczas usuwania segmentu pamieci wspoldzielonej");
+        perror("Blad podczas usuwania segmentu pamieci wspoldzielonej\n");
     }
 
 	return 0;

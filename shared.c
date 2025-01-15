@@ -21,7 +21,7 @@ void init_semaphore(int semid, int semnum, int value) {
 void P(int semid, int semnum) {
     struct sembuf sb;
     sb.sem_num = semnum;
-    sb.sem_op  = -1;
+    sb.sem_op = -1;
     sb.sem_flg = 0;
     if (semop(semid, &sb, 1) == -1) {
         perror("Operacja P nie powiodla sie (semop)");
@@ -32,7 +32,7 @@ void P(int semid, int semnum) {
 void V(int semid, int semnum) {
     struct sembuf sb;
     sb.sem_num = semnum;
-    sb.sem_op  = +1; 
+    sb.sem_op = +1; 
     sb.sem_flg = 0;
     if (semop(semid, &sb, 1) == -1) {
         perror("Operacja V nie powiodla sie (semop)");
