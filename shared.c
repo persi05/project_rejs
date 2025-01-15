@@ -1,6 +1,8 @@
 #include "shared.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
+#include <errno.h>
 
 int create_semaphores(key_t key) {
     int semid = semget(key, NUM_SEMAPHORES, IPC_CREAT | 0600);
@@ -23,9 +25,14 @@ void P(int semid, int semnum) {
     sb.sem_num = semnum;
     sb.sem_op = -1;
     sb.sem_flg = 0;
-    if (semop(semid, &sb, 1) == -1) {
-        perror("Operacja P nie powiodla sie (semop)");
+    while (semop(semid, &sb, 1) == -1) {
+    if (errno == EINTR) {
+        printf("Operacja P przerwana przez sig, konytnuuje\n");
+        fflush(stdout);
+    } else {
+        perror("Operacja P nie powiodla sie (semop)\n");
         exit(1);
+    }
     }
 }
 
@@ -34,9 +41,14 @@ void V(int semid, int semnum) {
     sb.sem_num = semnum;
     sb.sem_op = +1; 
     sb.sem_flg = 0;
-    if (semop(semid, &sb, 1) == -1) {
-        perror("Operacja V nie powiodla sie (semop)");
+    while (semop(semid, &sb, 1) == -1) {
+    if (errno == EINTR) {
+        printf("Operacja V przerwana przez sig, konytnuuje\n");
+        fflush(stdout);
+    } else {
+        perror("Operacja V nie powiodla sie (semop)\n");
         exit(1);
+    }
     }
 }
 

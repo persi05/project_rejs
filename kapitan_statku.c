@@ -60,15 +60,15 @@ void sail() {
     req.tv_nsec = 0;
 
     while (nanosleep(&req, &rem) == -1) {
-            if (errno == EINTR) {
-                printf("[KAPITAN STATKU] Otrzymano sig2 podczas rejsu, wznawiam podroz\n");
-                req = rem;
-                a = 1;
-            } 
-            else {
-                perror("[Kapitan Statku] Blad z nanosleep\n");
-                exit(1);
-            }
+        if (errno == EINTR) {
+            printf("[KAPITAN STATKU] Otrzymano sig2 podczas rejsu, wznawiam podroz\n");
+            req = rem;
+            a = 1;
+        } 
+        else {
+            perror("[Kapitan Statku] Blad z nanosleep\n");
+            exit(1);
+        }
     }
 
     P(semid, SEM_MUTEX);
@@ -118,15 +118,15 @@ void unload_passengers() {
             req.tv_nsec = 0;
 
             while (nanosleep(&req, &rem) == -1) {
-                    if (errno == EINTR) {
-                        printf("[KAPITAN STATKU] Otrzymano sig2 podczas rejsu, wznawiam podroz\n");
-                        req = rem;
-                        a = 1;
-                    } 
-                    else {
-                        perror("[Kapitan Statku] Blad z nanosleep\n");
-                        exit(1);
-                    }
+                if (errno == EINTR) {
+                    printf("[KAPITAN STATKU] Otrzymano sig2 podczas rejsu, wznawiam podroz\n");
+                    req = rem;
+                    a = 1;
+                } 
+                else {
+                    perror("[Kapitan Statku] Blad z nanosleep\n");
+                    exit(1);
+                }
             }
             P(semid, SEM_MUTEX);
             shdata->directionBridge = 1;
