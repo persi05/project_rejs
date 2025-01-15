@@ -38,6 +38,19 @@ void handle_signal(int sig) {
 void sail() {
     P(semid, SEM_MUTEX);
     shdata->totalRejsCount++;
+    shdata->isTrip = 1;
+    V(semid, SEM_MUTEX);
+
+    while (1) {
+        P(semid, SEM_MUTEX);
+        if (shdata->currentOnBridge == 0) {
+            V(semid, SEM_MUTEX);
+            break;
+        }
+        V(semid, SEM_MUTEX);
+    }
+
+    P(semid, SEM_MUTEX);
     printf("[KAPITAN STATKU] Wyplywamy w rejs %d i jest %d pasazerow(czas lub sig1)\n", shdata->totalRejsCount, shdata->currentOnShip);
     V(semid, SEM_MUTEX);
 
@@ -52,7 +65,7 @@ void sail() {
                 a = 1;
             } 
             else {
-                perror("nanosleep");
+                perror("[Kapitan Statku] Blad z nanosleep\n");
                 exit(1);
             }
     }
@@ -81,12 +94,12 @@ void unload_passengers() {
         else if (k == 1) {
             printf("2");
             P(semid, SEM_MUTEX);
-            shdata->isTrip = 1;
             shdata->directionBridge = 0;
             V(semid, SEM_MUTEX);
             sail();
             P(semid, SEM_MUTEX);
             shdata->directionBridge = 1;
+            shdata->earlyTrip = 0;
             V(semid, SEM_MUTEX);
         }
         else if (a == 1) break;
@@ -168,9 +181,8 @@ int main() {
             if (earlyTrip) {
                 P(semid, SEM_MUTEX);
                 shdata->earlyTrip = 0;
-                shdata->isTrip = 1;
                 V(semid, SEM_MUTEX);
-                printf("[KAPITAN STATKU] Sygnal SIGUSR1 - odplywam\n");
+                printf("[KAPITAN STATKU] Sygnal SIGUSR1 - zara odplywam\n");
                 break;
             }
             timeCount++;
@@ -180,7 +192,7 @@ int main() {
         }
 
         P(semid, SEM_MUTEX);
-        shdata->isTrip = 1;
+        shdata->directionBridge = 1;
         V(semid, SEM_MUTEX);
 
         sail();
@@ -196,7 +208,7 @@ int main() {
             V(semid, SEM_MUTEX);
             printf("[KAPITAN STATKU] signal2 odebrany podczas rejsu, koniec procedury\n");
             if (shmdt(shdata) == -1) {
-            perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
+            perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku\n");
             }
             return 0;
         }
@@ -205,7 +217,7 @@ int main() {
             V(semid, SEM_MUTEX);
             printf("[KAPITAN STATKU] Maksymalna liczba rejsow (%d), koniec procedury\n", MAXREJS);
             if (shmdt(shdata) == -1) {
-            perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku");
+            perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku\n");
             }
             return 0;
         }

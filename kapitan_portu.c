@@ -69,26 +69,12 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    printf("[KAPITAN PORTU]-------START------ wpisz 's' by wyslac signal1(odplyniecie), 'e' signal2(koniec dnia)\n");
+    printf("[KAPITAN PORTU]-------START------ wpisz 's' by wyslac signal1(odplyniecie), 'e' signal2(koniec dnia), 'k' by zakonczyc procedure\n");
 
     char input;
 
     while (1) {
-        P(semid, SEM_MUTEX);
-        if(shdata->endOfDay == 1){
-            V(semid, SEM_MUTEX);
-            printf("[KAPITAN PORTU] Maksymalna liczba rejsow (%d) lub koniec dnia, koniec procedury\n", MAXREJS);
-            fflush(0);
-            if (shmdt(shdata) == -1) {
-            perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_portu");
-            }
-            fflush(0);
-            return 0;
-        }
-        V(semid, SEM_MUTEX);
-
         input = getchar();
-        if (input == '\n') continue;
         while (getchar() != '\n');
 
         if (input == 's') {
@@ -99,10 +85,16 @@ int main(int argc, char* argv[]) {
             printf("[KAPITAN PORTU] Koniec dnia. Koniec procedury\n");
             break;
         }
+        else if (input == 'k') {
+            printf("[KAPITAN PORTU] Koniec procedury\n");
+            if (shmdt(shdata) == -1) {
+            perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_portu");
+            }
+            return 0;
+        }
         else {
             printf("[KAPITAN PORTU] Nieprawidlowy sygnal. Sprobuj ponownie.\n");
         }
-        printf("chodz2\n");
     }
 
     if (shmdt(shdata) == -1) {

@@ -64,7 +64,9 @@ while (1) {
     }
 
     P(semid, SEM_MUTEX);
-    if (shdata->directionBridge == 0 && shdata->currentOnBridge < MOSTEK_POJ) {
+    int b = shdata->currentOnBridge;
+    int s = shdata->currentOnShip;
+    if (shdata->directionBridge == 0 && b < MOSTEK_POJ && shdata->isTrip == 0 && b+s < STATEK_POJ) {
         shdata->currentOnBridge++;
         printf("[PASSENGER %d] wchodzi na mostek. Obecnie na mostku: %d, na statku: %d\n",
                 passenger_id, shdata->currentOnBridge, shdata->currentOnShip);
@@ -121,7 +123,7 @@ while (1) {
     }
 
     P(semid, SEM_MUTEX);
-    if (shdata->directionBridge == 1 && shdata->currentOnBridge < MOSTEK_POJ && shdata->earlyTrip == 0) {
+    if (shdata->directionBridge == 1 && shdata->currentOnBridge < MOSTEK_POJ && shdata->earlyTrip == 0 && shdata->isTrip == 0) {
         shdata->currentOnShip--;
         shdata->currentOnBridge++;
         printf("[PASSENGER %d] Schodzi ze statku i wchodzi na mostek. mostek: %d, statek: %d\n",
