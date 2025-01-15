@@ -60,7 +60,7 @@ while (1) {
             perror("Blad podczas odlaczania segmentu pamieci wspoldzielonej w pasazer");
         }
         printf("Koniec rejsow.\n");
-        return(0);
+        exit(0);
     }
 
     P(semid, SEM_MUTEX);

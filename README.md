@@ -2,5 +2,4 @@
 
 ToDo
 
-- rozwala sie jak wysle sig1 podczas rozladunku (poprawilem ale nadal nie dziala:D)
-- sprawdz czy nie ma ich na mostku jak wczesniejsze odplyniecie
+- dziala ale mozesz sprawdzic kiedys czy na pewno rozwala sie jak wysle sig1 podczas rozladunku i ktos jest na mostku 
