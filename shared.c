@@ -7,7 +7,7 @@
 int create_semaphores(key_t key) {
     int semid = semget(key, NUM_SEMAPHORES, IPC_CREAT | 0600);
     if (semid < 0) {
-        perror("Blad przy tworzeniu zestawu semaforow (semget)");
+        perror("\033[1;31mBlad przy tworzeniu zestawu semaforow (semget)\033[0m\n");
         exit(1);
     }
     return semid;
@@ -15,7 +15,7 @@ int create_semaphores(key_t key) {
 
 void init_semaphore(int semid, int semnum, int value) {
     if (semctl(semid, semnum, SETVAL, value) == -1) {
-        perror("Blad przy inicjalizacji semafora (semctl SETVAL)");
+        perror("\033[1;31mBlad przy inicjalizacji semafora (semctl SETVAL)\033[0m\n");
         exit(1);
     }
 }
@@ -27,10 +27,10 @@ void P(int semid, int semnum) {
     sb.sem_flg = 0;
     while (semop(semid, &sb, 1) == -1) {
     if (errno == EINTR) {
-        printf("Operacja P przerwana przez sig, konytnuuje\n");
+        printf("\033[0;32mOperacja P przerwana przez sig, konytnuuje\033[0m\n");
         fflush(stdout);
     } else {
-        perror("Operacja P nie powiodla sie (semop)\n");
+        perror("\033[1;31mOperacja P nie powiodla sie (semop)\033[0m\n");
         exit(1);
     }
     }
@@ -43,10 +43,10 @@ void V(int semid, int semnum) {
     sb.sem_flg = 0;
     while (semop(semid, &sb, 1) == -1) {
     if (errno == EINTR) {
-        printf("Operacja V przerwana przez sig, konytnuuje\n");
+        printf("\033[0;32mOperacja V przerwana przez sig, konytnuuje\033[0m\n");
         fflush(stdout);
     } else {
-        perror("Operacja V nie powiodla sie (semop)\n");
+        perror("\033[1;31mOperacja V nie powiodla sie (semop)\033[0m\n");
         exit(1);
     }
     }
@@ -54,6 +54,6 @@ void V(int semid, int semnum) {
 
 void remove_semaphores(int semid) {
     if (semctl(semid, 0, IPC_RMID) == -1) {
-        perror("Blad przy usuwaniu zestawu semaforow (semctl IPC_RMID)");
+        perror("\033[1;31mBlad przy usuwaniu zestawu semaforow (semctl IPC_RMID)\033[0m\n");
     }
 }
