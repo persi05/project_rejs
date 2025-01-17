@@ -19,7 +19,11 @@ void arg_checker(){
                 exit(1);
         }
     if(T2 >= T1) {
-                fprintf(stderr, "\033[1;31mNiepoprawne argumenty - T2 musi byc mniejsz niz T1\033[0m\n");
+                fprintf(stderr, "\033[1;31mNiepoprawne argumenty - T2 musi byc mniejszy niz T1\033[0m\n");
+                exit(1);
+        }
+    if(NUM_PASSENGERS >= 400) {
+                fprintf(stderr, "\033[1;31mNiepoprawne argumenty - liczba pasazerow musi byc mniejsza niz 400\033[0m\n");
                 exit(1);
         }
 }
@@ -104,7 +108,7 @@ int main() {
             perror("\033[1;31mBlad execl pasazer w main\033[0m\n");
             exit(1);
         }
-        //usleep(((rand() % 501) + 1500) * 100);
+        usleep(((rand() % 501) + 1500) * 100);
     }
     
     while (wait(NULL) > 0);
