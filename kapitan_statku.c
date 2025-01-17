@@ -24,6 +24,10 @@ void handle_signal(int sig) {
         shdata->directionBridge = 1;
         V(semid, SEM_MUTEX);
         printf("\033[1;31mWyslano sig1 podczas rejsu - kataklizm wodny. Koncze procedure\033[0m\n");
+        if (shmdt(shdata) == -1) {
+                perror("\033[1;31mBlad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku\033[0m\n");
+                exit(1);
+        }
         exit(1);
     }
     V(semid, SEM_MUTEX);
@@ -47,6 +51,10 @@ void perform_nanosleep(time_t seconds) {
             a = 1;
         } else {
             perror("\033[1;31m[Kapitan Statku] Blad z nanosleep\033[0m\n");
+            if (shmdt(shdata) == -1) {
+                perror("\033[1;31mBlad podczas odlaczania segmentu pamieci wspoldzielonej w kapitan_statku\033[0m\n");
+                exit(1);
+            }
             exit(1);
         }
     }
