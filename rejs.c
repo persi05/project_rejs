@@ -98,7 +98,7 @@ int main() {
     for (int i = 0; i < NUM_PASSENGERS; i++) {
         pid_t pidPassenger = fork();
         if (pidPassenger == -1) {
-            perror("\033[1;31mBlad podczas odpalania pasazer.c w main\033[0m\n");
+            perror("\033[1;31mBlad podczas tworzenia procesu pasazer w main\033[0m\n");
             exit(1);
         }
         if (pidPassenger == 0) {
