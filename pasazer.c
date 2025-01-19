@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
             break;
         }
         V(semid, SEM_MUTEX);
-        //usleep(300000);
+        usleep(300000);
     }
         //usleep(100000);
         P(semid, SEM_MUTEX);
