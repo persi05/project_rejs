@@ -5,7 +5,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/wait.h> 
+#include <sys/wait.h>
+#include <signal.h>
 #include <time.h>
 #include "shared.h"
 
@@ -22,14 +23,30 @@ void arg_checker(){
                 fprintf(stderr, "\033[1;31mNiepoprawne argumenty - T2 musi byc mniejszy niz T1\033[0m\n");
                 exit(1);
         }
-    if(NUM_PASSENGERS >= 400) {
-                fprintf(stderr, "\033[1;31mNiepoprawne argumenty - liczba pasazerow musi byc mniejsza niz 400\033[0m\n");
+    if(NUM_PASSENGERS > 600) {
+                fprintf(stderr, "\033[1;31mNiepoprawne argumenty - liczba pasazerow musi byc mniejsza niz 601\033[0m\n");
                 exit(1);
         }
 }
 
+void signal_handler(int sig) { //odpowiedzialna za usuwanie zombie
+    if (sig == SIGCHLD) {
+        while (waitpid(-1, NULL, WNOHANG) > 0);
+    }
+}
+
 int main() {
     arg_checker();
+
+    struct sigaction sa;
+    sa.sa_handler = signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+
+    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
+        perror("\033[1;31mBlad podczas rejestrowania handlera SIGCHLD\033[0m\n");
+        exit(1);
+    }
     
     key_t semkey = ftok(".", SEM_PROJ_ID);
     if (semkey == -1) {
@@ -108,7 +125,7 @@ int main() {
             perror("\033[1;31mBlad execl pasazer w main\033[0m\n");
             exit(1);
         }
-        usleep(((rand() % 501) + 1500) * 100);
+        //usleep(((rand() % 501) + 3500) * 100);
     }
     
     while (wait(NULL) > 0);

@@ -8,6 +8,7 @@
 int semid;
 SharedData* shdata;
 
+//Funkcja isEndOfDay sprawdza, czy nadszedł koniec dnia, jeśli tak to zwraca 1, inaczej 0
 int isEndOfDay(int passenger_id) {
     P(semid, SEM_MUTEX);
     if (shdata->endOfDay == 1) {
@@ -54,6 +55,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    //funkcja odpowiedzialna za wchodzenie na mostek 
     while (1) {
         if (isEndOfDay(passenger_id)) {
             if (shmdt(shdata) == -1) {
@@ -80,6 +82,8 @@ int main(int argc, char* argv[]) {
 
     //usleep(100000);
 
+    //funkcja odpowiedzialna za moment wchodzenia na statek z mostku
+    //jeśli kierunek mostku jest w przeciwną strone to schodzi z mostku
     while (1) {
         if (isEndOfDay(passenger_id)) {
             printf("\033[0;33mSchodzi do portu\n");
@@ -111,6 +115,7 @@ int main(int argc, char* argv[]) {
     }
     //usleep(1000000);
 
+    //funkcja odpowiedzialna za schodzenie ze statku po odbyciu rejsu
     while (1) {
         if (isEndOfDay(passenger_id)) {
             printf("\033[0;33mSchodzi na mostek i do portu\033[0m\n");

@@ -9,6 +9,7 @@
 
 pid_t kapitanStatku_pid;
 
+//funkcja odpowiedzialna za wysylanie sygnalu 1
 void send_signal1() {
     if (kill(kapitanStatku_pid, SIGUSR1) == -1) {
         perror("\033[1;31m[KAPITAN PORTU] Blad podczas wysylania 'signal1' do kapitan_statku\033[0m\n");
@@ -17,6 +18,7 @@ void send_signal1() {
     printf("\033[\033[1;34m[KAPITAN PORTU] Wyslano 'signal1' (wczesniejsze wyplyniecie) do kapitan_statku\033[0m\n");
 }
 
+//funkcja odpowiedzialna za wysylanie sygnalu 2
 void send_signal2() {
     if (kill(kapitanStatku_pid, SIGUSR2) == -1) {
         perror("\033[1;31m[KAPITAN PORTU] Blad podczas wysylania 'signal2' do kapitan_statku\033[0m\n");
@@ -25,6 +27,7 @@ void send_signal2() {
     printf("\033[\033[1;34m[KAPITAN PORTU] Wyslano 'signal2' (zakonczenie dnia) do kapitan_statku\033[0m\n");
 }
 
+//funkcja odpowiedzialna za czyszczenie bufforu
 void clear_buffer() {
     int a;
     while ((a = getchar()) != '\n' && a != EOF);
@@ -54,6 +57,7 @@ int main(int argc, char* argv[]) {
 
     char input;
 
+    //funkcja odpowiedzialna za odczytywanie z klawiatury i wysyłanie odpowiednich sygnałów
     while (1) {
         input = getchar();
         while (getchar() != '\n');

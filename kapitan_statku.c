@@ -15,6 +15,7 @@ int a = 0;
 
 volatile sig_atomic_t endOfDaySignal = 0;
 
+//funkcja odpowiedzialna za odbieranie obu sygnałów
 void handle_signal(int sig) {
     if(sig == SIGUSR1) {
     P(semid, SEM_MUTEX);
@@ -39,6 +40,7 @@ void handle_signal(int sig) {
     }
 }
 
+//funkcja odpowiedzialna za symulowanie trwania rejsu - taki sleep() tylko ze wznawianiem po odebraniu sygnału
 void perform_nanosleep(time_t seconds) {
     struct timespec req, rem;
     req.tv_sec = seconds;
@@ -60,6 +62,7 @@ void perform_nanosleep(time_t seconds) {
     }
 }
 
+//funkcja odpowiedzialna za zamkniecie mostku i płynięcie
 void sail() {
     P(semid, SEM_MUTEX);
     shdata->totalRejsCount++;
@@ -87,6 +90,7 @@ void sail() {
     V(semid, SEM_MUTEX);
 }
 
+//funkcja odpowiedzialna za wyładunek pasażerów i obsługę sygnału wcześniejszego rejsu podczas rozładunku
 void unload_passengers() {
     printf("\033[0;32m[KAPITAN STATKU] Rozpoczynam wyladunek pasazerow-----\033[0m\n");
     P(semid, SEM_MUTEX);
@@ -106,7 +110,6 @@ void unload_passengers() {
         else if (k == 1) {
             printf("2");
             P(semid, SEM_MUTEX);
-            //shdata->directionBridge = 0;
             shdata->totalRejsCount++;
             shdata->isTrip = 1;
             V(semid, SEM_MUTEX);
@@ -184,6 +187,7 @@ int main() {
 
     printf("\033[\033[1;34m[KAPITAN STATKU]-------START------\033[0m\n");
 
+    //funkcja łącząca całą logikę kapitana statku i robienia rzeczy po przejęciu sygnału
     while (1) {
         int timeCount = 0;//chyba tak mala nieprecyzyjnosc bedzie ok
         printf("\033[0;36m[KAPITAN STATKU] Rozpoczynam zaladunek pasazerow+++++\033[0m\n");
