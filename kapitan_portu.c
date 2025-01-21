@@ -1,10 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <string.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
 #include "shared.h"
 
 pid_t kapitanStatku_pid;
@@ -33,13 +26,23 @@ void clear_buffer() {
     while ((a = getchar()) != '\n' && a != EOF);
 }
 
-int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        perror("\033[1;31mBledna liczba argumentow przy wywolaniu kapitan_portu\033[0m\n");
+int main() {
+    int fifo_fd = open(fifo_path, O_RDONLY);
+    if (fifo_fd == -1) {
+        perror("\033[1;31m[KAPITAN PORTU] Blad otwarcia kolejki FIFO\033[0m\n");
+        unlink(fifo_path);
         exit(1);
     }
 
-    kapitanStatku_pid = (pid_t)atoi(argv[1]);
+    if (read(fifo_fd, &kapitanStatku_pid, sizeof(pid_t)) != sizeof(pid_t)) {
+        perror("\033[1;31m[KAPITAN PORTU] Blad odczytu PID z kolejki FIFO\033[0m\n");
+        close(fifo_fd);
+        unlink(fifo_path);
+        exit(1);
+    }
+    close(fifo_fd);
+
+    printf("\033[\033[1;34m[KAPITAN PORTU] Otrzymano PID kapitana statku: %d\033[0m\n", kapitanStatku_pid);
 
     key_t semkey = ftok(".", SEM_PROJ_ID);
     if (semkey == -1) {

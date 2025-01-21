@@ -1,11 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <time.h>
-#include <errno.h> 
 #include "shared.h"
 
 int semid;
@@ -140,6 +132,22 @@ void unload_passengers() {
 }
 
 int main() {
+    int fifo_fd = open(fifo_path, O_WRONLY);
+    if (fifo_fd == -1) {
+        perror("[1;31m[KAPITAN STATKU] Blad podczas otwierania kolejki FIFO[0m");
+        exit(1);
+    }
+
+    pid_t my_pid = getpid();
+    if (write(fifo_fd, &my_pid, sizeof(pid_t)) != sizeof(pid_t)) {
+        perror("[1;31m[KAPITAN STATKU] Blad podczas zapisu PID do kolejki FIFO[0m");
+        close(fifo_fd);
+        unlink(fifo_path);
+        exit(1);
+    }
+
+    close(fifo_fd);
+
     key_t semkey = ftok(".", SEM_PROJ_ID);
     if (semkey == -1) {
         perror("\033[1;31mBlad podczas generowania klucza semafora w kapitan_statku\033[0m\n");

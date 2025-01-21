@@ -1,13 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/wait.h>
-#include <signal.h>
-#include <time.h>
 #include "shared.h"
 
 void arg_checker(){
@@ -36,6 +26,11 @@ void signal_handler(int sig) { //odpowiedzialna za usuwanie zombie
 }
 
 int main() {
+    if (mkfifo(fifo_path, 0600) == -1) {
+        perror("\033[1;31mBlad podczas tworzenia kolejki FIFO\033[0m\n");
+        exit(1);
+    }
+
     arg_checker();
 
     struct sigaction sa;
@@ -103,9 +98,7 @@ int main() {
         exit(1);
     }
     if (pidKapitanPortu == 0) {
-        char pidArg[10];
-        snprintf(pidArg, sizeof(pidArg), "%d", pidKapitanStatku);
-        execl("./kapitan_portu", "kapitan_portu", pidArg, NULL);
+        execl("./kapitan_portu", "kapitan_portu", NULL);
         perror("\033[1;31mBlad podczas uruchamiania procesu kapitan_portu(execl)\033[0m\n");
         exit(1);
     }
@@ -130,6 +123,7 @@ int main() {
     
     while (wait(NULL) > 0);
 
+    unlink(fifo_path);
     remove_semaphores(semid);
     if (shmdt(shdata) == -1) {
         perror("\033[1;31mBlad podczas odlaczania segmentu pamieci wspoldzielonej\033[0m\n");

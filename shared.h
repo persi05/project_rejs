@@ -5,6 +5,17 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <errno.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <time.h>
 
 #define SEM_MUTEX         0
 #define NUM_SEMAPHORES    1
@@ -18,6 +29,7 @@
 #define T2             3   //czas trwania rejsu (s)
 #define MAXREJS        3
 #define NUM_PASSENGERS MAXREJS*STATEK_POJ+MAXREJS*MOSTEK_POJ+5
+#define fifo_path "/tmp/kapitan_fifo"
 
 typedef struct {
     int currentOnBridge;
